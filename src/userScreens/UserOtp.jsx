@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BaseurlRestuarant } from "../Apis/apiConfig";
+import { BaseurlBuyer, BaseurlRestuarant } from "../Apis/apiConfig";
 
 const UserOtp = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -10,6 +10,7 @@ const UserOtp = () => {
   const navigation = useNavigation();
   const route = useRoute()
   const email = route.params?.email
+  console.log(email);
   // Handle input change for OTP fields
   const handleChange = (value, index) => {
     if (/^[0-9]$/.test(value)) {
@@ -49,8 +50,8 @@ const UserOtp = () => {
   const handleSubmit = async () => {
     const otpCode = otp.join("");
 
-    console.log("Submitted OTP:", otpCode);
-    fetch(`${BaseurlRestuarant}verify-otp`, {
+    console.log("Submitted OTP:", otpCode,email);
+    fetch(`${BaseurlBuyer}/verify-otp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -76,7 +77,7 @@ const UserOtp = () => {
   const resendOtp = async () => {
     let email = await AsyncStorage.getItem("meatmeEmail");
 
-    fetch(`${BaseurlRestuarant}resend-otp`, {
+    fetch(`${BaseurlBuyer}/resend-otp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

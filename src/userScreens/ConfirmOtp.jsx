@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-nativ
 import Snackbar from "react-native-snackbar"; // Import Snackbar
 import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BaseurlRestuarant } from "../Apis/apiConfig";
+import { BaseurlBuyer, BaseurlRestuarant } from "../Apis/apiConfig";
 import Header from "../components/Header";
 import { ROUTES } from "../routes/RoutesConstants";
 
@@ -13,6 +13,7 @@ const UserOtp = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const email = route.params?.email;
+    console.log(email);
 
     // Handle input change for OTP fields
     const handleChange = (value, index) => {
@@ -54,7 +55,7 @@ const UserOtp = () => {
         const otpCode = otp.join("");
 
         console.log("Submitted OTP:", otpCode);
-        fetch(`${BaseurlRestuarant}verify-otp`, {
+        fetch(`${BaseurlBuyer}/verify-otp`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -97,7 +98,7 @@ const UserOtp = () => {
     };
 
     const resendOtp = async () => {
-        fetch(`${BaseurlRestuarant}resend-otp`, {
+        fetch(`${BaseurlBuyer}/resend-otp`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

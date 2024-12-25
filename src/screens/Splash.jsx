@@ -6,7 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Splash() {
 
-  const navigation = useNavigation()
+  const navigation = useNavigation();
+
   const getID = async () => {
     try {
       const restuarantId = await AsyncStorage.getItem('restuarantId');
@@ -19,7 +20,7 @@ export default function Splash() {
       } else if (restuarantId && supplierId) {
         navigation.replace(ROUTES.SupplierHome);
       } else {
-        navigation.replace(ROUTES.Onboarding);
+        navigation.replace(ROUTES.UserSignin);
       }
     } catch (error) {
       console.error('Error fetching IDs from AsyncStorage', error);
@@ -30,15 +31,16 @@ export default function Splash() {
     setTimeout(getID, 2000); // Retain the delay here if necessary
   }, []);
 
-
   return (
     <View style={styles.container}>
       <ImageBackground
         style={styles.imageBackground}
-        source={require('../../assets/images/Splash/imagebg.png')}
         resizeMode="cover"
       >
-        <Image style={styles.logo} source={require('../../assets/images/Splash/logo.png')} />
+        <Image
+          source={require('../../assets/images/Splash/c.png')}
+          style={styles.image}
+        />
       </ImageBackground>
     </View>
   );
@@ -53,8 +55,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logo: {
-    height: 156,
-    width: 276,
+  image: {
+    width: 300,
+    height: 300,
   },
 });

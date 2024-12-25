@@ -6,7 +6,7 @@ import GlobalInput from '../components/GlobalInput';
 import PasswordInput from '../components/PasswordInput';
 import GlobalButton from '../components/GlobalButton';
 import NoteInput from '../components/NoteInput';
-import { Baseurl, BaseurlRestuarant } from '../Apis/apiConfig';
+import { Baseurl, BaseurlBuyer, BaseurlRestuarant } from '../Apis/apiConfig';
 import { ROUTES } from '../routes/RoutesConstants';
 import Snackbar from 'react-native-snackbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,7 +19,7 @@ import BackButton from '../components/BackButton';
 
 export default function UserSignup({navigation}) {
   // State hooks for input fields
-  const [restaurantName, setRestaurantName] = useState('');
+  const [BuyerName, setBuyerName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [billingAddress, setBillingAddress] = useState('');
@@ -32,7 +32,6 @@ export default function UserSignup({navigation}) {
   const [userNumber, setUserNumber] = useState('');
   const [tick, setTick] = useState(true);
 const [loading, setloading] = useState(false)
-  console.log(phoneNumber,restaurantName)
   const toggletick = () => {
     setTick(!tick);
   };
@@ -50,13 +49,12 @@ const [loading, setloading] = useState(false)
 
 
   const createUser = async () => {
-    console.log(restaurantName, phoneNumber, email, shippingAddress, password, '----');
   
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^\d{10,15}$/; // Adjust according to your phone number format requirements
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   
-    if (!restaurantName || !phoneNumber || !email  || !shippingAddress  || !password) {
+    if (!BuyerName || !phoneNumber || !email  || !shippingAddress  || !password) {
       Snackbar.show({
         text: 'Please Enter All Fields',
         duration: Snackbar.LENGTH_LONG,
@@ -132,7 +130,7 @@ const [loading, setloading] = useState(false)
       "email": email,
       "billingAddress": billingAddress,
       "shippingAddress": shippingAddress,
-      "name": restaurantName,
+      "name": BuyerName,
       "specialNote": specialNote,
       "password": password
     });
@@ -147,7 +145,17 @@ const [loading, setloading] = useState(false)
     };
   
     try {
-      const response = await fetch(`${BaseurlRestuarant}`, requestOptions);
+      const response = await fetch(`${BaseurlBuyer}`, requestOptions);
+      console.log({
+        phone: phoneNumber,
+        email: email,
+        billingAddress: billingAddress,
+        shippingAddress: shippingAddress,
+        name: BuyerName,
+        specialNote: specialNote,
+        password: password,
+      });
+      
       const result = await response.json();
       console.log(result);
   
@@ -180,10 +188,10 @@ const [loading, setloading] = useState(false)
         <Header title={'Register!'} description={'Please Register to continue.'} />
 
         <GlobalInput
-          value={restaurantName}
-          onChangeText={(text)=>setRestaurantName(text)}
-          title={'Restaurant Name'}
-          hint={'Restaurant Name'}
+          value={BuyerName}
+          onChangeText={(text)=>setBuyerName(text)}
+          title={'User Name'}
+          hint={'User Name'}
           marginTop={'5%'}
         />
         {/* <GlobalInput
@@ -257,7 +265,7 @@ const [loading, setloading] = useState(false)
         />
         <View style={styles.rememberContainer}>
           <TouchableOpacity onPress={toggletick} style={styles.rememberButton}>
-            <View style={[styles.tickBox, { backgroundColor: tick ? themeStyle.PRIMARY_COLOR : themeStyle.WHITE, borderWidth: tick ? 0 : 1 }]}>
+            <View style={[styles.tickBox, { backgroundColor: tick ? '#6C53FD' : themeStyle.WHITE, borderWidth: tick ? 0 : 1 }]}>
               {tick && <Image style={styles.tickImage} source={require('../../assets/images/OnBoarding/tick.png')} />}
             </View>
             <Text style={styles.rememberText}>I agree to all terms & conditions and privacy policy.</Text>

@@ -1,7 +1,7 @@
 export default {
     WHITE: "#FFFFFF",
     BLACK: "#000000",
-    PRIMARY_COLOR: "rgba(212, 4, 28, 1)",
+    PRIMARY_COLOR: "#5a46cf",
     MEDIUM_BLACK: "rgba(100, 100, 100, 1)",
     TEXT_GREY: "rgba(119, 119, 119, 1)",
     PRIMARY_LIGHT: "rgba(255, 255, 255, 1)",

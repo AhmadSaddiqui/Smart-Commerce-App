@@ -16,8 +16,8 @@ export default function Header({title,description}) {
 
 const styles = StyleSheet.create({
   logo: {
-    height: 48,
-    width: 78,
+    height: 100,
+    width: 250,
     alignSelf: 'center',
     marginTop:'5%'
   },

@@ -9,7 +9,7 @@ import Snackbar from 'react-native-snackbar';
 import Loader from '../components/Loader';
 import Empty from '../components/Empty';
 import { useRoute } from '@react-navigation/native';
-import { BaseurlProducts } from '../Apis/apiConfig';
+import { BaseurlProducts, BaseurlRestuarant } from '../Apis/apiConfig';
 
 export default function UserProducts({ navigation }) {
   const route = useRoute();
@@ -86,7 +86,7 @@ export default function UserProducts({ navigation }) {
   const fetchFavoriteProducts = async () => {
     const restaurantId = await AsyncStorage.getItem('restuarantId');
     try {
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/restaurant/get-favorite-products/${restaurantId}`);
+      const response = await fetch(`${BaseurlRestuarant}/get-favorite-products/${restaurantId}`);
       const result = await response.json();
       setFavorites(result.favorites || []);
     } catch (error) {
@@ -148,13 +148,15 @@ export default function UserProducts({ navigation }) {
         restaurantId: restaurantId
       });
 
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/restaurant/add-favorite-product", {
+      const response = await fetch(`${BaseurlRestuarant}/add-favorite-product`, {
         method: "POST",
         headers: myHeaders,
         body: raw,
       });
       const result = await response.json();
       setFavLoad(false);
+      console.log('Snackbar message:', result?.message); // Log the message to the console
+
       Snackbar.show({
         text: result?.message,
         duration: Snackbar.LENGTH_LONG,
@@ -162,6 +164,7 @@ export default function UserProducts({ navigation }) {
         textColor: 'white',
         marginBottom: 0,
       });
+
       setFavorites([...favorites, { _id: productId }]);
     } catch (error) {
       console.error('Error adding favorite product:', error);
@@ -179,7 +182,7 @@ export default function UserProducts({ navigation }) {
         productId: productId,
         restaurantId: restaurantId
       });
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/restaurant/delete-favorite-product", {
+      const response = await fetch(`${BaseurlRestuarant}/delete-favorite-product`, {
         method: "PUT",
         headers: myHeaders,
         body: raw,

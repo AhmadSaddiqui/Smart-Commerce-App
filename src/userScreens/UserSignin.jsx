@@ -6,7 +6,7 @@ import GlobalInput from '../components/GlobalInput';
 import PasswordInput from '../components/PasswordInput';
 import GlobalButton from '../components/GlobalButton';
 import { ROUTES } from '../routes/RoutesConstants';
-import { Baseurl, BaseurlRestuarant } from '../Apis/apiConfig';
+import { Baseurl, BaseurlBuyer, BaseurlRestuarant } from '../Apis/apiConfig';
 import Snackbar from 'react-native-snackbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackButton from '../components/BackButton';
@@ -46,7 +46,7 @@ const [loading, setloading] = useState(false)
       };
   
       try {
-        const response = await fetch(`${BaseurlRestuarant}login`, requestOptions);
+        const response = await fetch(`${BaseurlBuyer}login`, requestOptions);
         const result = await response.json();
         console.log(result);
   
@@ -55,8 +55,8 @@ const [loading, setloading] = useState(false)
         setloading(false);
   
         if (result?.success === true) {
-          await AsyncStorage.setItem('restuarantToken', result?.token);
-          await AsyncStorage.setItem('restuarantId', result?.user?._id);
+          await AsyncStorage.setItem('buyerToken', result?.token);
+          await AsyncStorage.setItem('buyerId', result?.user?._id);
           navigation.replace(ROUTES.AppDrawer);
         }else{
           Snackbar.show({
@@ -99,7 +99,7 @@ const [loading, setloading] = useState(false)
 
         <View style={styles.rememberContainer}>
           <TouchableOpacity onPress={toggleTick} style={styles.rememberButton}>
-            <View style={[styles.tickBox, { backgroundColor: tick ? themeStyle.PRIMARY_COLOR : themeStyle.WHITE, borderWidth: tick ? 0 : 1 }]}>
+            <View style={[styles.tickBox, { backgroundColor: tick ? '#6C53FD' : themeStyle.WHITE, borderWidth: tick ? 0 : 1 }]}>
               {tick && <Image style={styles.tickImage} source={require('../../assets/images/OnBoarding/tick.png')} />}
             </View>
             <Text style={styles.rememberText}>Remember Me!</Text>
@@ -119,7 +119,7 @@ const [loading, setloading] = useState(false)
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footerText}> © 2024 MeatMe Halfway</Text>
+        <Text style={styles.footerText}> © 2024 Smart Commerce</Text>
         <View style={styles.separator} />
       </ScrollView>
     </View>
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   forgotText: {
     fontSize: 16,
-    color: themeStyle.PRIMARY_COLOR,
+    color: '#6C53FD',
     fontFamily: FONT.ManropeRegular,
     marginRight: '5%',
   },
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     fontSize: 16,
-    color: themeStyle.PRIMARY_COLOR,
+    color: '#6C53FD',
     fontFamily: FONT.ManropeRegular,
     marginRight: '5%',
   },

@@ -24,7 +24,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Loader from '../components/Loader';
 import { KEY_PREFIX } from 'redux-persist';
 import { isNewBackTitleImplementation } from 'react-native-screens';
-import { BaseurlProducts } from '../Apis/apiConfig';
+import { BaseurlBuyer, BaseurlCategory, BaseurlProducts } from '../Apis/apiConfig';
 
 
 export default function UserProducts({ navigation }) {
@@ -50,19 +50,19 @@ export default function UserProducts({ navigation }) {
   };
 
   const fetchMostRecentProduct = async () => {
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
-    const restaurantToken = await AsyncStorage.getItem('restuarantToken');
+    const buyerId = await AsyncStorage.getItem('buyerId');
+    const buyerToken = await AsyncStorage.getItem('buyerToken');
     const requestOptions = {
       method: "GET",
       headers: {
-        "x-access-token": restaurantToken,  // Include the en in the Authorization header
+        "x-access-token": buyerToken,  // Include the en in the Authorization header
         "Content-Type": "application/json"  // Assuming JSON format
       },
       redirect: "follow"
     };
 
     try {
-      const response = await fetch(`${BaseurlProducts}most-recent-product/${restaurantId}`, requestOptions);
+      const response = await fetch(`${BaseurlProducts}most-recent-product/${buyerId}`, requestOptions);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -79,18 +79,19 @@ export default function UserProducts({ navigation }) {
   const renderItem = ({ item }) => {
     // Check if the current item is selected
     const isSelected = item._id === selectedItemId;
-
+  
     return (
       <TouchableOpacity
-        style={[styles.item]} // Apply selected style conditionally
+        style={[styles.item, isSelected && styles.selectedItem]} // Apply selected style conditionally
         onPress={() => navigation.navigate(ROUTES.UserProducts, { item: item })} // Update selected state on press
       >
-        <Image source={require('../../assets/images/Home/beef.png')} style={[styles.image]} />
+        {/* Use the updated image URL for the emulator */}
+        <Image source={{ uri: item.image?.url.replace('localhost', '10.0.2.2') }} style={[styles.image]} />
         <Text style={styles.text}>{item.name}</Text>
       </TouchableOpacity>
     );
   };
-
+  
   const CHunkImages = [
     require('../../assets/images/Home/1.png'),
     require('../../assets/images/Home/9.png'),
@@ -111,21 +112,42 @@ export default function UserProducts({ navigation }) {
         method: "GET",
         redirect: "follow"
       };
-
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/category", requestOptions)
-      const result = await response.json()
-
-
-      const activeCategories = result?.categories.filter(category => category.status === 'Active')
-
-      setcategories(activeCategories)
-      if (activeCategories.length > 0) {
-        setSelectedItemId(activeCategories[0]._id); // Set the first item as selected
+    
+      // Log the request URL for debugging
+      console.log("Requesting categories from:", `${BaseurlCategory}`);
+    
+      const response = await fetch(`${BaseurlCategory}`, requestOptions);
+    
+      // Check if the response is successful
+      if (!response.ok) {
+        console.log('Failed to fetch categories. Status:', response.status);
+        return;
+      }
+    
+      const result = await response.json();
+    
+      // Log the result to see the data returned from the server
+      console.log('Response from server:', result);
+    
+      if (result?.categories) {
+        const activeCategories = result.categories.filter(category => category.status === 'Active');
+    
+        // Log the active categories to see if filtering works
+        console.log('Active Categories:', activeCategories);
+    
+        setcategories(activeCategories);
+        if (activeCategories.length > 0) {
+          setSelectedItemId(activeCategories[0]._id); // Set the first item as selected
+        }
+      } else {
+        console.log('No categories found in the response');
       }
     } catch (error) {
-      console.log(error)
+      // Log any errors that happen during the fetch
+      console.log('Error fetching categories:', error);
     }
-  }
+  };
+  
 
   useFocusEffect((
     useCallback(() => {
@@ -140,11 +162,19 @@ export default function UserProducts({ navigation }) {
         style={styles.chunkItem}
       >
         <TouchableOpacity onPress={() => handleFavoritePress(item._id)} style={styles.heartButton}>
-          <Image style={styles.heartIcon} source={isFavorite(item._id) ? require('../../assets/images/Home/heart.png') : require('../../assets/images/Home/greyheart.png')} />
+          <Image
+            style={styles.heartIcon}
+            source={isFavorite(item._id) ? require('../../assets/images/Home/heart.png') : require('../../assets/images/Home/greyheart.png')}
+          />
         </TouchableOpacity>
         <View style={styles.chunkImageContainer}>
-          <Image style={styles.chunkImage} source={item.image?.url ? { uri: item.image?.url } : require('../../assets/images/Home/4.png')} />
-
+          {/* Update the image source with the modified URL */}
+          <Image
+            style={styles.chunkImage}
+            source={{
+              uri: item.image?.url ? item.image?.url.replace('localhost', '10.0.2.2') : require('../../assets/images/Home/4.png')
+            }}
+          />
         </View>
         <Text style={styles.chunkTitle}>{item.name}</Text>
         <Text style={styles.chunkPrice}>
@@ -152,7 +182,6 @@ export default function UserProducts({ navigation }) {
           <Text style={styles.chunkPriceUnit}> /kg</Text>
         </Text>
         <View style={styles.chunkActions}>
-
           <TouchableOpacity
             onPress={() => {
               dispatch(addItemToCart({ ...item, quantity }));
@@ -165,8 +194,9 @@ export default function UserProducts({ navigation }) {
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
-    )
+    );
   };
+  
 
   const renderProductItem1 = ({ item }) => {
     return (
@@ -224,9 +254,9 @@ export default function UserProducts({ navigation }) {
     </View>
   );
   const fetchFavoriteProducts = async () => {
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/restaurant/get-favorite-products/${restaurantId}`);
+      const response = await fetch(`${BaseurlBuyer}/get-favorite-products/${buyerId}`);
       const result = await response.json();
       setFavorites(result.favorites || []);
     } catch (error) {
@@ -237,17 +267,17 @@ export default function UserProducts({ navigation }) {
   const getProductsBySupplier = async () => {
 
     try {
-      const restaurantId = await AsyncStorage.getItem('restuarantId');
-      const restaurantToken = await AsyncStorage.getItem('restuarantToken');
+      const buyerId = await AsyncStorage.getItem('buyerId');
+      const buyerToken = await AsyncStorage.getItem('buyerToken');
       const requestOptions = {
         method: "GET",
         headers: {
-          "x-access-token": restaurantToken,  // Include the en in the Authorization header
+          "x-access-token": buyerToken,  // Include the en in the Authorization header
           "Content-Type": "application/json"  // Assuming JSON format
         },
         redirect: "follow"
       };
-      const response = await fetch(`${BaseurlProducts}most-selling-product/${restaurantId}`, requestOptions);
+      const response = await fetch(`${BaseurlProducts}most-selling-product/${buyerId}`, requestOptions);
       const result = await response.json(); // Assuming the API returns JSON
       console.log("most selling products", result, "products")
       const productsWithImages = result.products?.map(product => ({
@@ -273,14 +303,14 @@ export default function UserProducts({ navigation }) {
 
   const addFavoriteProduct = async (productId) => {
     setFavLoad(true);
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
         productId: productId,
-        restaurantId: restaurantId
+        buyerId: buyerId
       });
 
       const requestOptions = {
@@ -290,13 +320,13 @@ export default function UserProducts({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/restaurant/add-favorite-product", requestOptions);
+      const response = await fetch(`${BaseurlBuyer}/add-favorite-product", requestOptions`);
       const result = await response.json();
       setFavLoad(false);
       Snackbar.show({
         text: result?.message,
         duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'rgba(212, 4, 28, 1)',
+        backgroundColor: '#5a46cf',
         textColor: 'white',
         marginBottom: 0,
       });
@@ -310,14 +340,14 @@ export default function UserProducts({ navigation }) {
 
   const removeFavoriteProduct = async (productId) => {
     setFavLoad(true);
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
         productId: productId,
-        restaurantId: restaurantId
+        buyerId: buyerId
       });
 
       const requestOptions = {
@@ -327,14 +357,14 @@ export default function UserProducts({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/restaurant/delete-favorite-product", requestOptions);
+      const response = await fetch(`${BaseurlBuyer}/delete-favorite-product, requestOptions`);
       const result = await response.json();
 
       setFavLoad(false);
       Snackbar.show({
         text: result?.message,
         duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'rgba(212, 4, 28, 1)',
+        backgroundColor: '#5a46cf',
         textColor: 'white',
         marginBottom: 0,
       });
@@ -560,6 +590,7 @@ const styles = StyleSheet.create({
   image: {
     width: 57,
     height: 57,
+    borderRadius:50
   },
   text: {
     marginTop: 5,
@@ -613,8 +644,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chunkImage: {
-    height: 60,
-    width: 60,
+    height: 120,
+    width: 120,
     resizeMode: 'contain',
   },
   chunkTitle: {
@@ -685,8 +716,8 @@ const styles = StyleSheet.create({
     height: 50,
   },
   selectedItem: {
-    borderWidth: 1,
-    borderColor: 'red', // Add border when selected
-    borderRadius: 10
+    //borderWidth: 1,
+    //borderColor: 'grey', // Add border when selected
+    //borderRadius: 6
   },
 });
