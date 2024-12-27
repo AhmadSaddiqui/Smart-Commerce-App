@@ -20,7 +20,9 @@ export default function Splash() {
       } else if (restuarantId && supplierId) {
         navigation.replace(ROUTES.SupplierHome);
       } else {
-        navigation.replace(ROUTES.UserSignin);
+        //navigation.replace(ROUTES.UserSignin);
+        navigation.replace(ROUTES.AppDrawer);
+
       }
     } catch (error) {
       console.error('Error fetching IDs from AsyncStorage', error);

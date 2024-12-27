@@ -7,7 +7,7 @@ import { addItemToCart } from '../redux/CartSlice';
 import { useDispatch } from 'react-redux';
 import Snackbar from 'react-native-snackbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BaseurlSupplier } from '../Apis/apiConfig';
+import { BaseurlBuyer, BaseurlSupplier } from '../Apis/apiConfig';
 
 export default function UserSingleItem({ navigation }) {
 
@@ -42,9 +42,9 @@ export default function UserSingleItem({ navigation }) {
 
 
   const fetchFavoriteProducts = async () => {
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/restaurant/get-favorite-products/${restaurantId}`);
+      const response = await fetch(`${BaseurlBuyer}/get-favorite-products/${buyerId}`);
       console.log(response, 'resfes')
       const result = await response.json();
       console.log(result, 'fetchfav')
@@ -59,14 +59,14 @@ export default function UserSingleItem({ navigation }) {
   const addFavoriteProduct = async (productId) => {
     console.log(productId, 'productId')
     setFavLoad(true);
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
         productId: productId,
-        restaurantId: restaurantId
+        buyerId: buyerId
       });
 
       const requestOptions = {
@@ -76,7 +76,7 @@ export default function UserSingleItem({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/restaurant/add-favorite-product", requestOptions);
+      const response = await fetch(`${BaseurlBuyer}/add-favorite-product`, requestOptions);
       const result = await response.json();
       setFavLoad(false);
       Snackbar.show({
@@ -96,14 +96,14 @@ export default function UserSingleItem({ navigation }) {
 
   const removeFavoriteProduct = async (productId) => {
     setFavLoad(true);
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
         productId: productId,
-        restaurantId: restaurantId
+        buyerId: buyerId
       });
       console.log(raw, 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,,,,,,,,,,,,,,,')
       const requestOptions = {
@@ -113,7 +113,7 @@ export default function UserSingleItem({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/restaurant/delete-favorite-product", requestOptions);
+      const response = await fetch(`${BaseurlBuyer}/delete-favorite-product`, requestOptions);
       const result = await response.json();
       console.log(result, '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,,')
       setFavLoad(false);

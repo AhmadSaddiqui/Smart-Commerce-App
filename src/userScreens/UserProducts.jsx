@@ -9,7 +9,7 @@ import Snackbar from 'react-native-snackbar';
 import Loader from '../components/Loader';
 import Empty from '../components/Empty';
 import { useRoute } from '@react-navigation/native';
-import { BaseurlProducts, BaseurlRestuarant } from '../Apis/apiConfig';
+import { BaseurlBuyer, BaseurlProducts } from '../Apis/apiConfig';
 
 export default function UserProducts({ navigation }) {
   const route = useRoute();
@@ -84,9 +84,9 @@ export default function UserProducts({ navigation }) {
   };
 
   const fetchFavoriteProducts = async () => {
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
-      const response = await fetch(`${BaseurlRestuarant}/get-favorite-products/${restaurantId}`);
+      const response = await fetch(`${BaseurlBuyer}/get-favorite-products/${buyerId}`);
       const result = await response.json();
       setFavorites(result.favorites || []);
     } catch (error) {
@@ -95,17 +95,17 @@ export default function UserProducts({ navigation }) {
   };
 
   const getProductsBySupplier = async () => {
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
-    const restaurantToken = await AsyncStorage.getItem('restuarantToken');
+    const buyerId = await AsyncStorage.getItem('buyerId');
+    const buyerToken = await AsyncStorage.getItem('buyerToken');
     const requestOptions = {
       method: "GET",
       headers: {
-        "x-access-token": restaurantToken,  // Include the en in the Authorization header
+        "x-access-token": buyerToken,  // Include the en in the Authorization header
       },
       redirect: "follow"
     };
     try {
-      const response = await fetch(`${BaseurlProducts}get-products-by-suppliers-and-category/${restaurantId}/${item?._id}`, requestOptions);
+      const response = await fetch(`${BaseurlProducts}get-products-by-suppliers-and-category/${buyerId}/${item?._id}`, requestOptions);
       const result = await response.json();
 
       const allOption = {
@@ -138,17 +138,17 @@ export default function UserProducts({ navigation }) {
 
   const addFavoriteProduct = async (productId) => {
     setFavLoad(true);
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
         productId: productId,
-        restaurantId: restaurantId
+        buyerId: buyerId
       });
 
-      const response = await fetch(`${BaseurlRestuarant}/add-favorite-product`, {
+      const response = await fetch(`${BaseurlBuyer}/add-favorite-product`, {
         method: "POST",
         headers: myHeaders,
         body: raw,
@@ -173,16 +173,16 @@ export default function UserProducts({ navigation }) {
 
   const removeFavoriteProduct = async (productId) => {
     setFavLoad(true);
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
         productId: productId,
-        restaurantId: restaurantId
+        buyerId: buyerId
       });
-      const response = await fetch(`${BaseurlRestuarant}/delete-favorite-product`, {
+      const response = await fetch(`${BaseurlBuyer}/delete-favorite-product`, {
         method: "PUT",
         headers: myHeaders,
         body: raw,
