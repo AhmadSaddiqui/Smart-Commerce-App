@@ -12,6 +12,7 @@ import {
 import Loader from '../components/Loader';
 import { useRoute } from '@react-navigation/native';
 import Video from 'react-native-video';
+import { BaseurlBuyer } from '../Apis/apiConfig';
 
 
 export default function AllProducts({ navigation }) {
@@ -125,9 +126,9 @@ export default function AllProducts({ navigation }) {
     </View>
   );
   const fetchFavoriteProducts = async () => {
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/restaurant/get-favorite-products/${restaurantId}`);
+      const response = await fetch(`${BaseurlBuyer}/get-favorite-products/${buyerId}`);
       // console.log(response, 'resfes')
       const result = await response.json();
       console.log(result, 'fetchfav')
@@ -138,13 +139,13 @@ export default function AllProducts({ navigation }) {
   };
 
   const getProductsBySupplier = async () => {
-    const restuarantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
-        restaurantId: restuarantId
+        buyerId: buyerId
       });
 
       const requestOptions = {
@@ -153,7 +154,7 @@ export default function AllProducts({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/products/get-products-by-suppliers/${restuarantId}`, requestOptions);
+      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/products/get-products-by-suppliers/${buyerId}`, requestOptions);
       const result = await response.json();
       setproducts(result);
       console.log('result:', result);
@@ -197,14 +198,14 @@ export default function AllProducts({ navigation }) {
   const addFavoriteProduct = async (productId) => {
     console.log(productId, 'productId')
     setFavLoad(true);
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
         productId: productId,
-        restaurantId: restaurantId
+        buyerId: buyerId
       });
 
       const requestOptions = {
@@ -214,7 +215,7 @@ export default function AllProducts({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/restaurant/add-favorite-product", requestOptions);
+      const response = await fetch(`${BaseurlBuyer}/add-favorite-product`, requestOptions);
       const result = await response.json();
       setFavLoad(false);
       Snackbar.show({
@@ -234,14 +235,14 @@ export default function AllProducts({ navigation }) {
 
   const removeFavoriteProduct = async (productId) => {
     setFavLoad(true);
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
 
       const raw = JSON.stringify({
         productId: productId,
-        restaurantId: restaurantId
+        buyerId: buyerId
       });
       // console.log(raw, 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,,,,,,,,,,,,,,,')
       const requestOptions = {
@@ -251,7 +252,7 @@ export default function AllProducts({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/restaurant/delete-favorite-product", requestOptions);
+      const response = await fetch(`${BaseurlBuyer}/delete-favorite-product`, requestOptions);
       const result = await response.json();
       setFavLoad(false);
       Snackbar.show({

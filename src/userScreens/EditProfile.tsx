@@ -15,6 +15,7 @@ import Snackbar from 'react-native-snackbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GlobalButton from '../components/GlobalButton';
 import BazierChartRestaurant from '../components/BazierChartRestaurant';
+import { BaseurlBuyer } from '../Apis/apiConfig';
 
 const EditProfile = ({ navigation }) => {
   const [data, setdata] = useState({});
@@ -24,12 +25,12 @@ const EditProfile = ({ navigation }) => {
   const [loading, setloading] = useState(false);
 
   const fetchData = async () => {
-    const restuarantId = await AsyncStorage.getItem('restuarantId');
-    const restaurantToken = await AsyncStorage.getItem('restuarantToken');
+    const buyerId = await AsyncStorage.getItem('buyerId');
+    const buyerToken = await AsyncStorage.getItem('buyerToken');
     const requestOptions = {
       method: 'GET',
       headers: {
-        'x-access-token': restaurantToken, // Include the en in the Authorization header
+        'x-access-token': buyerToken, // Include the en in the Authorization header
         'Content-Type': 'application/json', // Assuming JSON format
       },
       redirect: 'follow',
@@ -37,7 +38,7 @@ const EditProfile = ({ navigation }) => {
 
     try {
       const response = await fetch(
-        `https://meat-app-backend-zysoftec.vercel.app/api/restaurant/${restuarantId}`,
+        `${BaseurlBuyer}/${buyerId}`,
         requestOptions,
       );
 
@@ -66,10 +67,10 @@ const EditProfile = ({ navigation }) => {
   }, [data]);
 
   const handleSave = async () => {
-    const restuarantId = await AsyncStorage.getItem('restuarantId');
-    const restaurantToken = await AsyncStorage.getItem('restuarantToken');
+    const buyerId = await AsyncStorage.getItem('buyerId');
+    const buyerToken = await AsyncStorage.getItem('buyerToken');
     const myHeaders = {
-      'x-access-token': restaurantToken, // Include the en in the Authorization header
+      'x-access-token': buyerToken, // Include the en in the Authorization header
       'Content-Type': 'application/json', // Assuming JSON format
     };
     setloading(true);
@@ -78,7 +79,7 @@ const EditProfile = ({ navigation }) => {
         name: name,
         email: email,
         phone: phone,
-        id: restuarantId,
+        id: buyerId,
       });
 
       const requestOptions = {
@@ -89,7 +90,7 @@ const EditProfile = ({ navigation }) => {
       };
 
       const response = await fetch(
-        'https://meat-app-backend-zysoftec.vercel.app/api/restaurant',
+        `${BaseurlBuyer}`,
         requestOptions,
       );
       const result = await response.json();

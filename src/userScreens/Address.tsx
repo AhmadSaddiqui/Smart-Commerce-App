@@ -14,10 +14,10 @@ const [loading, setloading] = useState(true)
     const [addresses, setAddresses] = useState([]);
     const [total1, setTotal1] = useState(total && total);
     const fetchAddresses = async () => {
-      const restuarantId = await AsyncStorage.getItem('restuarantId');
+      const buyerId = await AsyncStorage.getItem('buyerId');
       
       try {
-          const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/address/${restuarantId}`);
+          const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/address/${buyerId}`);
           const result = await response.json();
           setAddresses(result);
           setloading(false)
