@@ -10,6 +10,7 @@ import { CHunk } from '../data/dummy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import Empty from '../components/Empty';
+import { BaseurlBuyer } from '../Apis/apiConfig';
 
 export default function UserFavourites({ navigation }) {
   const cartItems = useSelector(state => state.cart.items);
@@ -112,9 +113,9 @@ export default function UserFavourites({ navigation }) {
 
   const fetchFavoriteProducts = async () => {
     console.log('Fetching favorite products...');
-    const restaurantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
     try {
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/restaurant/get-favorite-products/${restaurantId}`);
+      const response = await fetch(`${BaseurlBuyer}/get-favorite-products/${buyerId}`);
       console.log(response, 'Response');
       const result = await response.json();
       console.log(result, 'Fetch Favorites');

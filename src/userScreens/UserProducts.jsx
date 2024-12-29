@@ -51,6 +51,7 @@ export default function UserProducts({ navigation }) {
   };
 
   const renderProductItem = ({ item }) => {
+    console.log(item,"yeh reder ho rha");
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('UserSingleItem', { item: item })}

@@ -8,7 +8,7 @@ import { GestureHandlerRootView, Swipeable, TextInput } from 'react-native-gestu
 import { ROUTES } from '../routes/RoutesConstants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Snackbar from 'react-native-snackbar';
-import { BaseurlRestuarant, BaseurlSupplier } from '../Apis/apiConfig';
+import { BaseurlBuyer, BaseurlRestuarant, BaseurlSupplier } from '../Apis/apiConfig';
 import { provinces } from '../data/province';
 import { Picker } from '@react-native-picker/picker';
 export default function Shipping({ navigation }) {
@@ -26,12 +26,12 @@ export default function Shipping({ navigation }) {
   // Function to fetch restaurant address with token
   const fetchRestaurantAddress = async () => {
     try {
-      const restaurantId = await AsyncStorage.getItem('restuarantId');
-      const token = await AsyncStorage.getItem('restuarantToken');
+      const buyerId = await AsyncStorage.getItem('buyerId');
+      const token = await AsyncStorage.getItem('buyerToken');
 
-      if (restaurantId && token) {
+      if (buyerId && token) {
         // Fetch the restaurant data with Authorization header
-        const response = await fetch(`${BaseurlRestuarant}/${restaurantId}`, {
+        const response = await fetch(`${BaseurlBuyer}/${buyerId}`, {
           method: 'GET',
           headers: {
             'x-access-token': token, // Add token in the Authorization header
@@ -182,7 +182,7 @@ export default function Shipping({ navigation }) {
 
   const placeOrder = async () => {
     setloading(true)
-    const restuarantId = await AsyncStorage.getItem('restuarantId')
+    const buyerId = await AsyncStorage.getItem('buyerId')
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -192,7 +192,7 @@ export default function Shipping({ navigation }) {
     }));
 
     const raw = JSON.stringify({
-      restaurantId: restuarantId,
+      buyerId: buyerId,
       items: items,
       shippingAddress: "123 Main St, Springfield, IL",
       billingAddress: "456 Elm St, Springfield, IL"

@@ -38,14 +38,14 @@ export default function UserPaymentDetails({ navigation }) {
   
     setloading(true);
     try {
-      const restaurantId = await AsyncStorage.getItem('restuarantId');
-      const token = await AsyncStorage.getItem('restuarantToken');
+      const buyerId = await AsyncStorage.getItem('buyerId');
+      const token = await AsyncStorage.getItem('buyerToken');
       const items = cartItems.map(item => ({
         productId: item._id,
         quantity: item.quantity,
       }));
       const payload = {
-        restaurantId: restaurantId,
+        buyerId: buyerId,
         items: items,
         shippingAddress: address,
         billingAddress: address,

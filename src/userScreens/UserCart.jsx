@@ -221,7 +221,7 @@ export default function UserCart({ navigation }) {
               <Text style={styles.itemTitle}>
                 {truncateTitle(item.name, 15)}
               </Text>
-              <Text style={styles.itemQuantity}>{item.quantity}Kg</Text>
+              <Text style={styles.itemQuantity}>{item.quantity}.</Text>
             </View>
             <View style={styles.quantityContainer}>
               <TouchableOpacity onPress={() => decrementQuantity(item._id, item.quantity)} style={styles.decrementButton}>
@@ -305,7 +305,7 @@ export default function UserCart({ navigation }) {
             <View style={styles.billSummaryContainer}>
               {cartItems.map((item) => (
                 <View key={item.id} style={styles.billItem}>
-                  <Text style={styles.billItemText}>{`${item.name} (${item.quantity}kg x ${item.quantity})`}</Text>
+                  <Text style={styles.billItemText}>{`${item.name} (${item.quantity}. x ${item.quantity})`}</Text>
                   <Text style={styles.billItemPrice}>${item.price * item.quantity}</Text>
                 </View>
               ))}

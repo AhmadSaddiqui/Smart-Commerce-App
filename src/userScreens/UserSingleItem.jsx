@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import themeStyle, { FONT } from '../styles/themeStyle'
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import themeStyle, { FONT } from '../styles/themeStyle';
 import GlobalButton from '../components/GlobalButton';
 import { useRoute } from '@react-navigation/native';
 import { addItemToCart } from '../redux/CartSlice';
@@ -10,16 +10,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BaseurlBuyer, BaseurlSupplier } from '../Apis/apiConfig';
 
 export default function UserSingleItem({ navigation }) {
-
-  const route = useRoute()
+  const route = useRoute();
   const [favorites, setFavorites] = useState([]);
   const [option, setOption] = useState({});
-  const item = route.params?.item
-  // console.log(item, 'item')
+  const item = route.params?.item;
   const dispatch = useDispatch();
-  console.log(item, 'item')
-
   const [quantity, setQuantity] = useState(1);
+  const [favLoad, setFavLoad] = useState(false);
 
   const incrementQuantity = () => {
     if (quantity < 100) {
@@ -33,31 +30,23 @@ export default function UserSingleItem({ navigation }) {
     }
   };
 
-  const [favLoad, setFavLoad] = useState(false);
-
   const addToCart = () => {
     dispatch(addItemToCart({ ...item, quantity }));
     navigation.navigate('UserCart'); // adjust the navigation if necessary
   };
 
-
   const fetchFavoriteProducts = async () => {
     const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const response = await fetch(`${BaseurlBuyer}/get-favorite-products/${buyerId}`);
-      console.log(response, 'resfes')
       const result = await response.json();
-      console.log(result, 'fetchfav')
       setFavorites(result.favorites || []);
     } catch (error) {
       console.error('Error fetching favorite products:', error);
     }
   };
 
-
-
   const addFavoriteProduct = async (productId) => {
-    console.log(productId, 'productId')
     setFavLoad(true);
     const buyerId = await AsyncStorage.getItem('buyerId');
     try {
@@ -66,14 +55,14 @@ export default function UserSingleItem({ navigation }) {
 
       const raw = JSON.stringify({
         productId: productId,
-        buyerId: buyerId
+        buyerId: buyerId,
       });
 
       const requestOptions = {
         method: "POST",
         headers: myHeaders,
         body: raw,
-        redirect: "follow"
+        redirect: "follow",
       };
 
       const response = await fetch(`${BaseurlBuyer}/add-favorite-product`, requestOptions);
@@ -86,8 +75,6 @@ export default function UserSingleItem({ navigation }) {
         textColor: 'white',
         marginBottom: 0,
       });
-
-      // Update the favorites list
       setFavorites([...favorites, { _id: productId }]);
     } catch (error) {
       console.error('Error adding favorite product:', error);
@@ -103,19 +90,17 @@ export default function UserSingleItem({ navigation }) {
 
       const raw = JSON.stringify({
         productId: productId,
-        buyerId: buyerId
+        buyerId: buyerId,
       });
-      console.log(raw, 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,,,,,,,,,,,,,,,')
       const requestOptions = {
         method: "PUT",
         headers: myHeaders,
         body: raw,
-        redirect: "follow"
+        redirect: "follow",
       };
 
       const response = await fetch(`${BaseurlBuyer}/delete-favorite-product`, requestOptions);
       const result = await response.json();
-      console.log(result, '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<,,')
       setFavLoad(false);
       Snackbar.show({
         text: result?.message,
@@ -124,8 +109,6 @@ export default function UserSingleItem({ navigation }) {
         textColor: 'white',
         marginBottom: 0,
       });
-
-      // Update the favorites list
       setFavorites(favorites.filter((item) => item._id !== productId));
     } catch (error) {
       console.error('Error removing favorite product:', error);
@@ -137,12 +120,10 @@ export default function UserSingleItem({ navigation }) {
       const response = await fetch(`${BaseurlSupplier}get-delivery-option/${item?.supplierId?._id || item?.supplierId}`);
       const json = await response.json();
       setOption(json.deliveryOption);
-      console.log('option:', json.deliveryOption);
     } catch (e) {
       console.log('error delivery option:', e);
     }
-  }
-
+  };
 
   useEffect(() => {
     fetchFavoriteProducts();
@@ -152,6 +133,7 @@ export default function UserSingleItem({ navigation }) {
   const isFavorite = (productId) => {
     return favorites.some((item) => item._id === productId);
   };
+
   const handleFavoritePress = (productId) => {
     if (isFavorite(productId)) {
       removeFavoriteProduct(productId);
@@ -160,30 +142,38 @@ export default function UserSingleItem({ navigation }) {
     }
   };
 
-
   return (
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.imageContainer}>
-
           <TouchableOpacity onPress={() => handleFavoritePress(item._id)} style={styles.heartButton}>
             <Image style={styles.heartIcon} source={isFavorite(item?._id) ? require('../../assets/images/Home/heart.png') : require('../../assets/images/Home/greyheart.png')} />
           </TouchableOpacity>
 
-
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Image style={styles.backIcon} source={require('../../assets/images/SingleItem/back.png')} />
           </TouchableOpacity>
+
+          {/* Image rendering */}
           {
             item?.image?.url ? (
-              <Image resizeMode='contain' style={styles.itemImage} source={{ uri: item?.image?.url }} />
-
+              <Image
+                resizeMode="contain"
+                style={styles.itemImage}
+                source={{
+                  uri: item.image?.url.replace('localhost', '10.0.2.2') // Replace localhost with 10.0.2.2 for Android Emulator
+                }} />
             ) : item?.image ? (
-              <Image resizeMode='contain' style={styles.itemImage} source={{ uri: item.image }} />
-
-            ) :
-              <Image resizeMode='contain' style={styles.itemImage} source={item.image} />
-
+              <Image
+                resizeMode="contain"
+                style={styles.itemImage}
+                source={{ uri: item.image }} />
+            ) : (
+              <Image
+                resizeMode="contain"
+                style={styles.itemImage}
+                source={item.image} />
+            )
           }
         </View>
 
@@ -196,13 +186,13 @@ export default function UserSingleItem({ navigation }) {
         <View style={styles.priceContainer}>
           <Text style={styles.itemPrice}>
             ${item?.price}
-            <Text style={styles.pricePerKg}> /kg</Text>
+            <Text style={styles.pricePerKg}> /</Text>
           </Text>
           <View style={styles.quantityContainer}>
             <TouchableOpacity onPress={decrementQuantity} style={styles.decrementButton}>
               <Image style={styles.minusIcon} source={require('../../assets/images/SingleItem/minus.png')} />
             </TouchableOpacity>
-            <Text style={styles.quantityText}>{quantity}Kg</Text>
+            <Text style={styles.quantityText}>{quantity}</Text>
             <TouchableOpacity onPress={incrementQuantity} style={styles.incrementButton}>
               <Image style={styles.plusIcon} source={require('../../assets/images/SingleItem/plus.png')} />
             </TouchableOpacity>
@@ -210,32 +200,34 @@ export default function UserSingleItem({ navigation }) {
         </View>
 
         {option?.flatRate != 0 || option?.byWeight != 0 || option?.byDistance != 0 || undefined ? <Text style={styles.deliveryOptionsTitle}>Delivery Options:</Text> : <></>}
-        {option?.flatRate != 0 || option?.byWeight != 0 || option?.byDistance != 0 || undefined ? <View style={styles.deliveryOptionsContainer}>
-          {
-            (
-              <View style={styles.deliveryOption}>
-                <Image style={styles.dotIcon} source={option?.flatRate !== 0 ? require('../../assets/images/SingleItem/reddot.png') : require('../../assets/images/SingleItem/whitedot.png')} />
-                <Text style={styles.flatRateText}>Flat Rate: ${option?.flatRate}</Text>
-              </View>
-            )
-          }
-          {
-            (
-              <View style={styles.deliveryOption}>
-                <Image style={styles.dotIcon} source={option?.byDistance !== 0 ? require('../../assets/images/SingleItem/reddot.png') : require('../../assets/images/SingleItem/whitedot.png')} />
-                <Text style={styles.byDistanceText}>By Distance: ${option?.byDistance}</Text>
-              </View>
-            )
-          }
-          {
-            (
-              <View style={styles.deliveryOption}>
-                <Image style={styles.dotIcon} source={option?.byWeight !== 0 ? require('../../assets/images/SingleItem/reddot.png') : require('../../assets/images/SingleItem/whitedot.png')} />
-                <Text style={styles.byWeightText}>By Weight: ${option?.byWeight}</Text>
-              </View>
-            )
-          }
-        </View> : <></>}
+        {option?.flatRate != 0 || option?.byWeight != 0 || option?.byDistance != 0 || undefined ? (
+          <View style={styles.deliveryOptionsContainer}>
+            {
+              (
+                <View style={styles.deliveryOption}>
+                  <Image style={styles.dotIcon} source={option?.flatRate !== 0 ? require('../../assets/images/SingleItem/reddot.png') : require('../../assets/images/SingleItem/whitedot.png')} />
+                  <Text style={styles.flatRateText}>Flat Rate: ${option?.flatRate}</Text>
+                </View>
+              )
+            }
+            {
+              (
+                <View style={styles.deliveryOption}>
+                  <Image style={styles.dotIcon} source={option?.byDistance !== 0 ? require('../../assets/images/SingleItem/reddot.png') : require('../../assets/images/SingleItem/whitedot.png')} />
+                  <Text style={styles.byDistanceText}>By Distance: ${option?.byDistance}</Text>
+                </View>
+              )
+            }
+            {
+              (
+                <View style={styles.deliveryOption}>
+                  <Image style={styles.dotIcon} source={option?.byWeight !== 0 ? require('../../assets/images/SingleItem/reddot.png') : require('../../assets/images/SingleItem/whitedot.png')} />
+                  <Text style={styles.byWeightText}>By Weight: ${option?.byWeight}</Text>
+                </View>
+              )
+            }
+          </View>
+        ) : <></>}
 
         <Text style={styles.descriptionTitle}>Description:</Text>
         <Text style={styles.descriptionText}>{item?.description}</Text>
@@ -258,7 +250,7 @@ export default function UserSingleItem({ navigation }) {
         <View style={styles.bottomSpace} />
       </ScrollView>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -273,21 +265,35 @@ const styles = StyleSheet.create({
     backgroundColor: themeStyle.HOME_ITEM,
     borderRadius: 6,
     marginTop: '8%',
+    position: 'relative', // added for positioning heart and back button
+  },
+  heartButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 2, // ensures the heart icon is above the image
+  },
+  heartIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
   },
   backButton: {
-    marginLeft: '5%',
-    marginTop: '5%',
-    width: 50
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 2, // ensures the back button is above the image
   },
   backIcon: {
-    height: 30,
-    width: 30,
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
   },
   itemImage: {
-    width: 234,
-    height: 192,
+    width: '100%', // Makes the image fill the container width
+    height: '100%', // Makes the image fill the container height
     alignSelf: 'center',
-    marginTop: '10%',
+    borderRadius: 6, // Keeps the image rounded with the container
   },
   itemTitle: {
     fontSize: 24,
@@ -445,21 +451,5 @@ const styles = StyleSheet.create({
   },
   bottomSpace: {
     height: 100,
-  },
-  heartButton: {
-    height: 30,
-    width: 30,
-    backgroundColor: themeStyle.WHITE,
-    borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: "absolute",
-    right: 20,
-    top: 20
-  },
-  heartIcon: {
-    width: 22,
-    height: 22,
-    resizeMode: 'contain',
   },
 });

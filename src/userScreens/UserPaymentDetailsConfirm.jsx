@@ -27,11 +27,11 @@ export default function UserPaymentDetailsConfirm({ navigation }) {
   useEffect(() => {
     console.log('item:', item);
     const fetchData = async () => {
-      const restaurantToken = await AsyncStorage.getItem('restuarantToken');
+      const buyerToken = await AsyncStorage.getItem('buyerToken');
       const requestOptions = {
         method: "GET",
         headers: {
-          "x-access-token": restaurantToken,  // Include the en in the Authorization header
+          "x-access-token": buyerToken,  // Include the en in the Authorization header
           "Content-Type": "application/json"  // Assuming JSON format
         },
         redirect: "follow"
@@ -84,7 +84,7 @@ export default function UserPaymentDetailsConfirm({ navigation }) {
               <Image style={{ height: 112, width: 112, alignSelf: 'center', marginTop: '10%' }} source={require('../../assets/images/Payment/tick.png')} />
 
               <Text style={{ fontSize: 24, fontFamily: FONT.ManropeSemiBold, color: themeStyle.BLACK, alignSelf: "center", marginTop: '5%' }}>Order Accepted</Text>
-              <Text style={{ fontSize: 24, fontFamily: FONT.ManropeSemiBold, color: themeStyle.BLACK, alignSelf: "center", marginTop: '5%' }}>{data?.restaurantId?.name}</Text>
+              <Text style={{ fontSize: 24, fontFamily: FONT.ManropeSemiBold, color: themeStyle.BLACK, alignSelf: "center", marginTop: '5%' }}>{data?.buyerId?.name}</Text>
               <Text style={{ fontSize: 16, fontFamily: FONT.ManropeSemiBold, color: themeStyle.TEXT_GREY, alignSelf: "center", marginTop: '2%', textAlign: "center" }}>Your order {"\n"} has been accepted   and is now being processed by the supplier.</Text>
               <Text style={{ fontSize: 20, fontFamily: FONT.ManropeSemiBold, color: themeStyle.BLACK, marginTop: '5%', marginLeft: '5%' }}>Order Details:</Text>
 
