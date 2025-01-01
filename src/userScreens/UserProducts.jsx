@@ -51,23 +51,36 @@ export default function UserProducts({ navigation }) {
   };
 
   const renderProductItem = ({ item }) => {
-    console.log(item,"yeh reder ho rha");
     return (
       <TouchableOpacity
         onPress={() => navigation.navigate('UserSingleItem', { item: item })}
         style={styles.chunkItem}
       >
         <TouchableOpacity onPress={() => handleFavoritePress(item._id)} style={styles.heartButton}>
-          <Image style={styles.heartIcon} source={isFavorite(item._id) ? require('../../assets/images/Home/heart.png') : require('../../assets/images/Home/greyheart.png')} />
+          <Image
+            style={styles.heartIcon}
+            source={
+              isFavorite(item._id)
+                ? require('../../assets/images/Home/heart.png')
+                : require('../../assets/images/Home/greyheart.png')
+            }
+          />
         </TouchableOpacity>
+  
         <View style={styles.chunkImageContainer}>
-          <Image style={styles.chunkImage} source={{ uri: item?.image }} />
+          {/* Replace 'localhost' with '10.0.2.2' */}
+          <Image
+            style={styles.chunkImage}
+            source={{ uri: item?.image?.url?.replace('localhost', '10.0.2.2') }}
+          />
         </View>
+  
         <Text style={styles.chunkTitle}>{item.name}</Text>
         <Text style={styles.chunkPrice}>
           ${item.price}
-          <Text style={styles.chunkPriceUnit}> /kg</Text>
+          <Text style={styles.chunkPriceUnit}>.</Text>
         </Text>
+  
         <View style={styles.chunkActions}>
           <TouchableOpacity
             onPress={() => {
@@ -76,13 +89,17 @@ export default function UserProducts({ navigation }) {
             }}
             style={styles.cartButton}
           >
-            <Image style={styles.cartIcon} source={require('../../assets/images/Home/whitecart.png')} />
+            <Image
+              style={styles.cartIcon}
+              source={require('../../assets/images/Home/whitecart.png')}
+            />
             <Text style={styles.cartText}>Add to cart</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
-    )
+    );
   };
+  
 
   const fetchFavoriteProducts = async () => {
     const buyerId = await AsyncStorage.getItem('buyerId');
@@ -98,28 +115,38 @@ export default function UserProducts({ navigation }) {
   const getProductsBySupplier = async () => {
     const buyerId = await AsyncStorage.getItem('buyerId');
     const buyerToken = await AsyncStorage.getItem('buyerToken');
+  
+    // Add console logs to see if buyerId and buyerToken are null or have valid values
+    console.log('Debug - Buyer ID:', buyerId);
+    console.log('Debug - Buyer Token:', buyerToken);
+  
     const requestOptions = {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "x-access-token": buyerToken,  // Include the en in the Authorization header
+        'x-access-token': buyerToken,  // Include token in header
       },
-      redirect: "follow"
+      redirect: 'follow',
     };
+  
     try {
-      const response = await fetch(`${BaseurlProducts}get-products-by-suppliers-and-category/${buyerId}/${item?._id}`, requestOptions);
+      const response = await fetch(
+        `${BaseurlProducts}get-products-by-suppliers-and-category/${buyerId}/${item?._id}`,
+        requestOptions,
+      );
       const result = await response.json();
-
+  
+      // Rest of your code...
       const allOption = {
         subcategoryId: 'all',
         subcategory: 'All',
         products: [],
       };
-
-      result[0]?.subcategories.forEach(subcategory => {
+  
+      result[0]?.subcategories.forEach((subcategory) => {
         allOption.products.push(...subcategory.products);
       });
-
-      setCategories([allOption, ...result[0]?.subcategories || []]);
+  
+      setCategories([allOption, ...(result[0]?.subcategories || [])]);
       setAllProducts(allOption.products);
       setSelectedItemId('all');
       setSelectedSubcategory(allOption);
@@ -131,10 +158,11 @@ export default function UserProducts({ navigation }) {
       setLastLoading(false);
     }
   };
-
+  
   useEffect(() => {
     getProductsBySupplier();
     fetchFavoriteProducts();
+    console.log('Debug - Passed item:', item);
   }, []);
 
   const addFavoriteProduct = async (productId) => {
