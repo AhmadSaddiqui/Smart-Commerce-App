@@ -16,6 +16,7 @@ import themeStyle, { FONT } from '../styles/themeStyle';
 import { Categories, CHunk, Ribs } from '../data/dummy';
 import HomeHeader from '../components/HomeHeader';
 import { ROUTES } from '../routes/RoutesConstants';
+import { Buffer } from 'buffer';
 import GlobalButton from '../components/GlobalButton';
 import { addItemToCart } from '../redux/CartSlice';
 import { useDispatch } from 'react-redux';
@@ -25,6 +26,7 @@ import { PacmanIndicator } from 'react-native-indicators';
 import { useFocusEffect } from '@react-navigation/native';
 import Loader from '../components/Loader';
 import { BaseurlBuyer, BaseurlCategory, BaseurlProducts } from '../Apis/apiConfig';
+import axios from 'axios'; // Import axios for API calls
 
 export default function UserProducts({ navigation }) {
   const flatListRef = useRef(null);
@@ -32,6 +34,7 @@ export default function UserProducts({ navigation }) {
   const dispatch = useDispatch();
   const [quantity, setquantity] = useState(1);
   const [products, setproducts] = useState([]);
+  const [searchproducts, setsearchproducts] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [favLoad, setFavLoad] = useState(false);
   const [loading, setloading] = useState(true);
@@ -40,6 +43,12 @@ export default function UserProducts({ navigation }) {
   const [recent, setrecent] = useState([]);
   const [column, setColumn] = useState(2);
   const [selectedImage, setSelectedImage] = useState(null); // State to hold selected image
+
+  // New State Variables for Image-Based Search
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(null);
+
+  
 
   // Image Picker Options
   const imagePickerOptions = {
@@ -397,9 +406,157 @@ export default function UserProducts({ navigation }) {
     }
   };
 
-  // Image Picker Functions
+  // ------------------ Image-Based Search Functions ------------------
+
+  /**
+   * Converts an image URI to a base64 string.
+   * @param {string} uri - The URI of the image.
+   * @returns {Promise<string>} - A promise that resolves to the base64 string of the image.
+   */
+  const uriToBase64 = async (uri) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => {
+          reader.abort();
+          reject(new Error('Problem parsing input file.'));
+        };
+        reader.onload = () => {
+          const dataUrl = reader.result;
+          const base64 = dataUrl.split(',')[1]; // Remove the data URL prefix
+          resolve(base64);
+        };
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error converting URI to base64:', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Generates tags from the base64 image using the Imagga API.
+   * @param {string} base64Image - The base64 string of the image.
+   * @returns {Promise<string[]>} - A promise that resolves to an array of tags.
+   */
+  const generateTagsFromImagga = async (base64Image) => {
+    const imaggaApiKey = "acc_2d1b8c44c6a251d";
+    const imaggaApiSecret = "a4bece68eb91e737f351872f7b5a7087";
+    const apiUrl = "https://api.imagga.com/v2/tags";
+
+    const authHeader = 'Basic ' + Buffer.from(`${imaggaApiKey}:${imaggaApiSecret}`).toString('base64');
+
+    const formData = new FormData();
+    formData.append('image_base64', base64Image);
+
+    try {
+      const response = await axios.post(apiUrl, formData, {
+        headers: {
+          'Authorization': authHeader,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const tags = response.data.result.tags.map((tag) => tag.tag.en);
+
+      console.log("Yehb tags ha ",tags);
+      return tags;
+    } catch (error) {
+      console.error('Failed to read image using Imagga API:', error);
+      throw new Error('Failed to process image');
+    }
+  };
+
+  /**
+   * Handles the generation of tags from the selected image.
+   * @param {string} imageUri - The URI of the selected image.
+   */
+  const handleGenerateTags = async (imageUri) => {
+    if (!imageUri) return;
+
+    try {
+      setImageLoading(true);
+      setImageError(null);
+
+      const base64Image = await uriToBase64(imageUri);
+      const tags = await generateTagsFromImagga(base64Image);
+
+      console.log('Generated Tags:', tags);
+
+      if (tags.length === 0) {
+        throw new Error('No tags generated from image');
+      }
+
+      await handleSearchByTags(tags);
+    } catch (error) {
+      console.error('Error generating tags from image:', error);
+      setImageError(error.message);
+      Snackbar.show({
+        text: `Error yeh ha : ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+        textColor: 'white',
+      });
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  /**
+   * Handles searching for products based on the generated tags.
+   * @param {string[]} tags - An array of tags extracted from the image.
+   */
+  const handleSearchByTags = async (tags) => {
+    try {
+      const buyerToken = await AsyncStorage.getItem('buyerToken');
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "x-access-token": buyerToken,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ tags }),
+        redirect: "follow"
+      };
+
+      const response = await fetch(`${BaseurlProducts}/search-by-tags`, requestOptions);
+
+      if (!response.ok) {
+        const errorResult = await response.json();
+        throw new Error(errorResult.message || 'Error searching products by tags');
+      }
+
+      const searchResults = await response.json();
+      console.log('Search Results:',JSON.stringify(searchResults,null,2));
+
+      if (searchResults.length === 0) {
+        Snackbar.show({
+          text: 'No products found for the selected image.',
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: '#ff9800',
+          textColor: 'white',
+        });
+      }
+
+      setsearchproducts(searchResults);
+    } catch (error) {
+      console.error('Error searching products by tags:', error);
+      setImageError(error.message);
+      Snackbar.show({
+        text: `Error: ${error.message}`,
+        duration: Snackbar.LENGTH_LONG,
+        backgroundColor: 'red',
+        textColor: 'white',
+      });
+    }
+  };
+
+  // ------------------ Image Picker Functions ------------------
+
   const openCamera = () => {
-    launchCamera(imagePickerOptions, (response) => {
+    launchCamera(imagePickerOptions, async (response) => {
       if (response.didCancel) {
         console.log('User cancelled camera picker');
       } else if (response.errorCode) {
@@ -410,23 +567,24 @@ export default function UserProducts({ navigation }) {
           backgroundColor: 'red',
           textColor: 'white',
         });
-      } else {
+      } else if (response.assets && response.assets.length > 0) {
         const asset = response.assets[0];
         setSelectedImage(asset.uri);
         console.log('Camera Image URI:', asset.uri);
-        // Further actions like uploading the image
         Snackbar.show({
           text: 'Image selected from camera',
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: themeStyle.PRIMARY_COLOR,
           textColor: 'white',
         });
+        // Perform image-based search
+        await handleGenerateTags(asset.uri);
       }
     });
   };
 
   const openGallery = () => {
-    launchImageLibrary(imagePickerOptions, (response) => {
+    launchImageLibrary(imagePickerOptions, async (response) => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.errorCode) {
@@ -437,17 +595,18 @@ export default function UserProducts({ navigation }) {
           backgroundColor: 'red',
           textColor: 'white',
         });
-      } else {
+      } else if (response.assets && response.assets.length > 0) {
         const asset = response.assets[0];
         setSelectedImage(asset.uri);
         console.log('Gallery Image URI:', asset.uri);
-        // Further actions like uploading the image
         Snackbar.show({
           text: 'Image selected from gallery',
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: themeStyle.PRIMARY_COLOR,
           textColor: 'white',
         });
+        // Perform image-based search
+        await handleGenerateTags(asset.uri);
       }
     });
   };
@@ -474,6 +633,8 @@ export default function UserProducts({ navigation }) {
       { cancelable: true }
     );
   };
+
+  // ------------------ Render Logic ------------------
 
   if (lastloading) {
     return (
@@ -511,6 +672,14 @@ export default function UserProducts({ navigation }) {
         {/* Optionally display the selected image */}
         {selectedImage && (
           <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+        )}
+
+        {/* Show loading indicator for image-based search */}
+        {imageLoading && (
+          <View style={styles.imageLoadingContainer}>
+            <PacmanIndicator color={themeStyle.PRIMARY_COLOR} size={50} />
+            <Text style={styles.loadingText}>Searching for products...</Text>
+          </View>
         )}
 
         {/* Categories Header */}
@@ -876,5 +1045,17 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignSelf: 'center',
     marginTop: 10,
+  },
+  imageLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  loadingText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: themeStyle.PRIMARY_COLOR,
+    fontFamily: FONT.ManropeRegular,
   },
 });
