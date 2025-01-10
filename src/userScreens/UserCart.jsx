@@ -209,7 +209,7 @@ export default function UserCart({ navigation }) {
             <View style={styles.imageContainer}>
               {
                 item?.image?.url ? (
-                  <Image resizeMode='contain' style={styles.cartItemImage} source={{ uri: item.image?.url }} />
+                  <Image resizeMode='contain' style={styles.cartItemImage} source={{ uri: item.image?.url.replace('localhost', '10.0.2.2') }} />
 
                 ) : (
                   <Image resizeMode='contain' style={styles.cartItemImage} source={{ uri: item.image }} />

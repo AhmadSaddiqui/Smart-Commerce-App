@@ -1,6 +1,18 @@
-import { View, Text, Image, TouchableOpacity, TextInput, FlatList, StyleSheet, ScrollView, ToastAndroid, ActivityIndicator, StatusBar } from 'react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import themeStyle, { FONT } from '../styles/themeStyle'
+import { 
+  View, 
+  Text, 
+  Image, 
+  TouchableOpacity, 
+  TextInput, 
+  FlatList, 
+  StyleSheet, 
+  ScrollView, 
+  StatusBar, 
+  Alert 
+} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import themeStyle, { FONT } from '../styles/themeStyle';
 import { Categories, CHunk, Ribs } from '../data/dummy';
 import HomeHeader from '../components/HomeHeader';
 import { ROUTES } from '../routes/RoutesConstants';
@@ -9,23 +21,10 @@ import { addItemToCart } from '../redux/CartSlice';
 import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Snackbar from 'react-native-snackbar';
-import {
-  BallIndicator,
-  BarIndicator,
-  DotIndicator,
-  MaterialIndicator,
-  PacmanIndicator,
-  PulseIndicator,
-  SkypeIndicator,
-  UIActivityIndicator,
-  WaveIndicator,
-} from 'react-native-indicators';
+import { PacmanIndicator } from 'react-native-indicators';
 import { useFocusEffect } from '@react-navigation/native';
 import Loader from '../components/Loader';
-import { KEY_PREFIX } from 'redux-persist';
-import { isNewBackTitleImplementation } from 'react-native-screens';
 import { BaseurlBuyer, BaseurlCategory, BaseurlProducts } from '../Apis/apiConfig';
-
 
 export default function UserProducts({ navigation }) {
   const flatListRef = useRef(null);
@@ -37,9 +36,18 @@ export default function UserProducts({ navigation }) {
   const [favLoad, setFavLoad] = useState(false);
   const [loading, setloading] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState(null);
-  const [categories, setcategories] = useState([])
-  const [recent, setrecent] = useState([])
+  const [categories, setcategories] = useState([]);
+  const [recent, setrecent] = useState([]);
   const [column, setColumn] = useState(2);
+  const [selectedImage, setSelectedImage] = useState(null); // State to hold selected image
+
+  // Image Picker Options
+  const imagePickerOptions = {
+    mediaType: 'photo',
+    quality: 0.8,
+    includeBase64: false,
+    saveToPhotos: true,
+  };
 
   const scrollToLeft = () => {
     flatListRef.current.scrollToOffset({ offset: 0, animated: true });
@@ -55,7 +63,7 @@ export default function UserProducts({ navigation }) {
     const requestOptions = {
       method: "GET",
       headers: {
-        "x-access-token": buyerToken,  // Include the en in the Authorization header
+        "x-access-token": buyerToken,  // Include the token in the header
         "Content-Type": "application/json"  // Assuming JSON format
       },
       redirect: "follow"
@@ -69,29 +77,31 @@ export default function UserProducts({ navigation }) {
       }
 
       const result = await response.json(); // Assuming the response is in JSON format
-      setrecent(result)
+      setrecent(result);
     } catch (error) {
       console.error('Error fetching the most recent product:', error.message);
     }
   };
 
-
   const renderItem = ({ item }) => {
     // Check if the current item is selected
     const isSelected = item._id === selectedItemId;
-  
+
     return (
       <TouchableOpacity
         style={[styles.item, isSelected && styles.selectedItem]} // Apply selected style conditionally
-        onPress={() => navigation.navigate(ROUTES.UserProducts, { item: item })} // Update selected state on press
+        onPress={() => {
+          setSelectedItemId(item._id); // Update selected state on press
+          navigation.navigate(ROUTES.UserProducts, { item: item });
+        }}
       >
         {/* Use the updated image URL for the emulator */}
-        <Image source={{ uri: item.image?.url.replace('localhost', '10.0.2.2') }} style={[styles.image]} />
+        <Image source={{ uri: item.image?.url.replace('localhost', '10.0.2.2') }} style={styles.image} />
         <Text style={styles.text}>{item.name}</Text>
       </TouchableOpacity>
     );
   };
-  
+
   const CHunkImages = [
     require('../../assets/images/Home/1.png'),
     require('../../assets/images/Home/9.png'),
@@ -147,13 +157,12 @@ export default function UserProducts({ navigation }) {
       console.log('Error fetching categories:', error);
     }
   };
-  
 
-  useFocusEffect((
+  useFocusEffect(
     useCallback(() => {
-      ShowCategory()
+      ShowCategory();
     }, [])
-  ))
+  );
 
   const renderProductItem = ({ item }) => {
     return (
@@ -172,7 +181,7 @@ export default function UserProducts({ navigation }) {
           <Image
             style={styles.chunkImage}
             source={{
-              uri: item.image?.url ? item.image?.url.replace('localhost', '10.0.2.2') : require('../../assets/images/Home/4.png')
+              uri: item.image?.url ? item.image.url.replace('localhost', '10.0.2.2') : require('../../assets/images/Home/4.png')
             }}
           />
         </View>
@@ -196,7 +205,6 @@ export default function UserProducts({ navigation }) {
       </TouchableOpacity>
     );
   };
-  
 
   const renderProductItem1 = ({ item }) => {
     return (
@@ -213,7 +221,7 @@ export default function UserProducts({ navigation }) {
         <Text style={styles.chunkTitle}>{item.name}</Text>
         <Text style={styles.chunkPrice}>
           ${item.price}
-          <Text style={styles.chunkPriceUnit}> /kg</Text>
+          <Text style={styles.chunkPriceUnit}>.</Text>
         </Text>
         <View style={styles.chunkActions}>
           <TouchableOpacity
@@ -233,7 +241,6 @@ export default function UserProducts({ navigation }) {
 
   const renderSubcategoryChunk = ({ item }) => (
     <View style={styles.chunkContainer}>
-
       <FlatList
         data={item.products}
         renderItem={renderProductItem1}
@@ -253,6 +260,7 @@ export default function UserProducts({ navigation }) {
       />
     </View>
   );
+
   const fetchFavoriteProducts = async () => {
     const buyerId = await AsyncStorage.getItem('buyerId');
     try {
@@ -265,40 +273,39 @@ export default function UserProducts({ navigation }) {
   };
 
   const getProductsBySupplier = async () => {
-
     try {
       const buyerId = await AsyncStorage.getItem('buyerId');
       const buyerToken = await AsyncStorage.getItem('buyerToken');
       const requestOptions = {
         method: "GET",
         headers: {
-          "x-access-token": buyerToken,  // Include the en in the Authorization header
+          "x-access-token": buyerToken,  // Include the token in the header
           "Content-Type": "application/json"  // Assuming JSON format
         },
         redirect: "follow"
       };
       const response = await fetch(`${BaseurlProducts}most-selling-product/${buyerId}`, requestOptions);
       const result = await response.json(); // Assuming the API returns JSON
-      console.log("most selling products", result, "products")
+      console.log("most selling products", result, "products");
       const productsWithImages = result.products?.map(product => ({
         ...product,
         image: getRandomImage()
       }));
 
       setproducts(result);
-      setloading(false)
-      setlastloading(false)
+      setloading(false);
+      setlastloading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
-      setloading(false)
-      setlastloading(false)
+      setloading(false);
+      setlastloading(false);
     }
   };
 
   useEffect(() => {
     getProductsBySupplier();
-    fetchMostRecentProduct()
-    fetchFavoriteProducts()
+    fetchMostRecentProduct();
+    fetchFavoriteProducts();
   }, [selectedItemId]);
 
   const addFavoriteProduct = async (productId) => {
@@ -320,7 +327,7 @@ export default function UserProducts({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch(`${BaseurlBuyer}/add-favorite-product", requestOptions`);
+      const response = await fetch(`${BaseurlBuyer}/add-favorite-product`, requestOptions);
       const result = await response.json();
       setFavLoad(false);
       Snackbar.show({
@@ -335,6 +342,7 @@ export default function UserProducts({ navigation }) {
       setFavorites([...favorites, { _id: productId }]);
     } catch (error) {
       console.error('Error adding favorite product:', error);
+      setFavLoad(false);
     }
   };
 
@@ -357,7 +365,7 @@ export default function UserProducts({ navigation }) {
         redirect: "follow"
       };
 
-      const response = await fetch(`${BaseurlBuyer}/delete-favorite-product, requestOptions`);
+      const response = await fetch(`${BaseurlBuyer}/delete-favorite-product`, requestOptions);
       const result = await response.json();
 
       setFavLoad(false);
@@ -373,8 +381,10 @@ export default function UserProducts({ navigation }) {
       setFavorites(favorites.filter((item) => item._id !== productId));
     } catch (error) {
       console.error('Error removing favorite product:', error);
+      setFavLoad(false);
     }
   };
+
   const isFavorite = (productId) => {
     return favorites.some((item) => item._id === productId);
   };
@@ -387,29 +397,123 @@ export default function UserProducts({ navigation }) {
     }
   };
 
+  // Image Picker Functions
+  const openCamera = () => {
+    launchCamera(imagePickerOptions, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled camera picker');
+      } else if (response.errorCode) {
+        console.log('Camera Error: ', response.errorMessage);
+        Snackbar.show({
+          text: `Camera Error: ${response.errorMessage}`,
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'red',
+          textColor: 'white',
+        });
+      } else {
+        const asset = response.assets[0];
+        setSelectedImage(asset.uri);
+        console.log('Camera Image URI:', asset.uri);
+        // Further actions like uploading the image
+        Snackbar.show({
+          text: 'Image selected from camera',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: themeStyle.PRIMARY_COLOR,
+          textColor: 'white',
+        });
+      }
+    });
+  };
+
+  const openGallery = () => {
+    launchImageLibrary(imagePickerOptions, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('Image Picker Error: ', response.errorMessage);
+        Snackbar.show({
+          text: `Image Picker Error: ${response.errorMessage}`,
+          duration: Snackbar.LENGTH_LONG,
+          backgroundColor: 'red',
+          textColor: 'white',
+        });
+      } else {
+        const asset = response.assets[0];
+        setSelectedImage(asset.uri);
+        console.log('Gallery Image URI:', asset.uri);
+        // Further actions like uploading the image
+        Snackbar.show({
+          text: 'Image selected from gallery',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: themeStyle.PRIMARY_COLOR,
+          textColor: 'white',
+        });
+      }
+    });
+  };
+
+  const handleImagePicker = () => {
+    Alert.alert(
+      'Select Image',
+      'Choose an option',
+      [
+        {
+          text: 'Camera',
+          onPress: () => openCamera(),
+        },
+        {
+          text: 'Gallery',
+          onPress: () => openGallery(),
+        },
+        {
+          text: 'Cancel',
+          onPress: () => {},
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   if (lastloading) {
     return (
       <Loader />
-    )
+    );
   }
-
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor={themeStyle.BLACK} />
       <ScrollView>
         <HomeHeader onPress={true} />
-        {/* <TouchableOpacity activeOpacity={2} onPress={()=>navigation.navigate(ROUTES.AllProducts,{search:true})} style={styles.searchBar}>
-          <Image style={styles.searchIcon} source={require('../../assets/images/Home/search.png')} />
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholderTextColor={themeStyle.TEXT_GREY}
-            placeholder='Search Here'
-            editable={false}
+            placeholder="Search..."
+            placeholderTextColor="#888"
+            // Add other TextInput props as needed
+            onChangeText={(text) => {
+              // Handle search input change
+              // You can implement search functionality here
+              console.log('Search query:', text);
+            }}
           />
-        </TouchableOpacity> */}
+          <TouchableOpacity onPress={handleImagePicker} style={styles.cameraButton}>
+            <Image
+              style={styles.cameraIcon}
+              source={require('../../assets/images/Home/Uimage.png')} // Ensure you have a camera icon
+            />
+          </TouchableOpacity>
+        </View>
 
+        {/* Optionally display the selected image */}
+        {selectedImage && (
+          <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+        )}
+
+        {/* Categories Header */}
         <View style={styles.categoriesHeader}>
           <Text style={styles.categoriesTitle}>Categories</Text>
           <TouchableOpacity onPress={scrollToLeft} style={styles.leftArrow}>
@@ -420,6 +524,7 @@ export default function UserProducts({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        {/* Categories FlatList */}
         <FlatList
           ref={flatListRef}
           horizontal
@@ -430,19 +535,24 @@ export default function UserProducts({ navigation }) {
           contentContainerStyle={styles.flatListContainer}
         />
 
+        {/* Latest Products Header */}
         <View style={styles.chunkHeader}>
           <Text style={styles.categoriesTitle}>Latest Products</Text>
-          {/* <TouchableOpacity onPress={() => navigation.navigate(ROUTES.AllProducts)} style={styles.viewAll}>
+          {/* Uncomment if you want a "View All" button */}
+          {/* 
+          <TouchableOpacity onPress={() => navigation.navigate(ROUTES.AllProducts)} style={styles.viewAll}>
             <Text style={styles.viewAllText}>View All</Text>
             <Image resizeMode='contain' style={styles.arrowIcon} source={require('../../assets/images/Home/arrow2.png')} />
-          </TouchableOpacity> */}
+          </TouchableOpacity> 
+          */}
         </View>
 
+        {/* Latest Products FlatList */}
         {
           loading ? (
             <PacmanIndicator color={themeStyle.PRIMARY_COLOR} size={70} style={{ marginTop: 150 }} />
           ) :
-            recent?.length == 0 ? (
+            recent?.length === 0 ? (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
                 <Text style={{ fontSize: 20, color: "black", marginTop: "50%" }}>No Products Yet!</Text>
               </View>
@@ -457,20 +567,24 @@ export default function UserProducts({ navigation }) {
             )
         }
 
-
+        {/* Most Selling Products Header */}
         <View style={styles.chunkHeader}>
           <Text style={styles.categoriesTitle}>Most Selling</Text>
-          {/* <TouchableOpacity onPress={() => navigation.navigate(ROUTES.AllProducts)} style={styles.viewAll}>
+          {/* Uncomment if you want a "View All" button */}
+          {/* 
+          <TouchableOpacity onPress={() => navigation.navigate(ROUTES.AllProducts)} style={styles.viewAll}>
             <Text style={styles.viewAllText}>View All</Text>
             <Image resizeMode='contain' style={styles.arrowIcon} source={require('../../assets/images/Home/arrow2.png')} />
-          </TouchableOpacity> */}
+          </TouchableOpacity> 
+          */}
         </View>
 
+        {/* Most Selling Products FlatList */}
         {
           loading ? (
             <PacmanIndicator color={themeStyle.PRIMARY_COLOR} size={70} style={{ marginTop: 150 }} />
           ) :
-            products?.length == 0 ? (
+            products?.length === 0 ? (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
                 <Text style={{ fontSize: 20, color: "black", marginTop: "50%" }}>No Products Yet!</Text>
               </View>
@@ -484,6 +598,7 @@ export default function UserProducts({ navigation }) {
               />
             )
         }
+
         <View style={styles.footerSpace} />
       </ScrollView>
     </View>
@@ -567,17 +682,14 @@ const styles = StyleSheet.create({
   },
   leftArrow: {
     marginLeft: 'auto',
-    left: 108,
+    marginRight: 10, // Adjust spacing as needed
   },
   rightArrow: {
-    marginLeft: 'auto',
-    marginRight: '5%',
-    left: 30
+    marginLeft: 10, // Adjust spacing as needed
   },
   arrowIcon: {
     height: 19,
     width: 19,
-    marginLeft: '5%'
   },
   flatListContainer: {
     paddingHorizontal: 10,
@@ -590,7 +702,7 @@ const styles = StyleSheet.create({
   image: {
     width: 57,
     height: 57,
-    borderRadius:50
+    borderRadius: 50,
   },
   text: {
     marginTop: 5,
@@ -604,7 +716,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: '5%',
     marginTop: '5%',
-    // backgroundColor:"red",
     width: "90%"
   },
   viewAll: {
@@ -630,7 +741,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     justifyContent: 'center',
     marginTop: '5%',
-    // elevation:0.3
+    borderRadius: 10, // Added border radius for better UI
   },
   chunkImageContainer: {
     height: 107,
@@ -639,7 +750,7 @@ const styles = StyleSheet.create({
     borderColor: themeStyle.bgcItem,
     borderWidth: 2,
     alignSelf: 'center',
-    borderRadius: 107 / 2,
+    borderRadius: 53.5, // Half of 107 to make it circular
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -683,7 +794,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     right: 5,
-    top: 5
+    top: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+
+    elevation: 3, // For Android shadow
   },
   heartIcon: {
     width: 22,
@@ -716,8 +836,45 @@ const styles = StyleSheet.create({
     height: 50,
   },
   selectedItem: {
-    //borderWidth: 1,
-    //borderColor: 'grey', // Add border when selected
-    //borderRadius: 6
+    borderWidth: 2,
+    borderColor: themeStyle.PRIMARY_COLOR, // Highlight color when selected
+    borderRadius: 8,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F1F1', // Search bar background color
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginHorizontal: '5%', // Adjust to 0 for full width
+    marginTop: '5%', // Space below the header
+    width: '90%', // Set to '100%' for full width
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+
+    elevation: 3, // For Android shadow
+  },
+  cameraButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  cameraIcon: {
+    height: 35,
+    width: 45,
+    resizeMode: 'contain',
+  },
+  selectedImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignSelf: 'center',
+    marginTop: 10,
   },
 });

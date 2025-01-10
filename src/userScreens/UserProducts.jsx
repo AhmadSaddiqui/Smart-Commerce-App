@@ -71,7 +71,7 @@ export default function UserProducts({ navigation }) {
           {/* Replace 'localhost' with '10.0.2.2' */}
           <Image
             style={styles.chunkImage}
-            source={{ uri: item?.image?.url?.replace('localhost', '10.0.2.2') }}
+            source={{ uri: item?.image?.replace('localhost', '10.0.2.2') }}
           />
         </View>
   
@@ -134,6 +134,7 @@ export default function UserProducts({ navigation }) {
         requestOptions,
       );
       const result = await response.json();
+      console.log("Yeh wala aha ",JSON.stringify(result,null,2))
   
       // Rest of your code...
       const allOption = {
@@ -456,8 +457,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chunkImage: {
-    height: 60,
-    width: 60,
+    height: 100,
+    width: 100,
     resizeMode: 'contain',
   },
   chunkTitle: {

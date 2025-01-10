@@ -148,12 +148,12 @@ const EditProfile = ({ navigation }) => {
         <BazierChartRestaurant />
 
         <View style={styles.infoSection}>
-          <Text style={styles.infoLabel}>RESTAURANT NAME</Text>
+          <Text style={styles.infoLabel}> NAME</Text>
           <TextInput
             style={styles.infoText}
             value={name}
             onChangeText={setName}
-            placeholder="Enter restaurant name"
+            placeholder="Enter  name"
           />
         </View>
 

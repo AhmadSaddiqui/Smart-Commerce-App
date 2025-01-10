@@ -25,6 +25,8 @@ export default function UserPaymentDetailsConfirm({ navigation }) {
 
 
   useEffect(() => {
+    console.log('ID =>', id);
+
     console.log('item:', item);
     const fetchData = async () => {
       const buyerToken = await AsyncStorage.getItem('buyerToken');

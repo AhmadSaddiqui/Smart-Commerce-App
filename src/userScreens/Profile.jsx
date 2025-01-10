@@ -22,7 +22,7 @@ const Profile=()=> {
         </View>
 
         <View style={styles.infoSection}>
-          <Text style={styles.infoLabel}>RESTURNANT nAME</Text>
+          <Text style={styles.infoLabel}>NAME</Text>
           <Text style={styles.infoText}>Vishal Khadok</Text>
         </View>
 

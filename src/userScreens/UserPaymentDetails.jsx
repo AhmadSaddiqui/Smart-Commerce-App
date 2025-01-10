@@ -125,6 +125,8 @@ export default function UserPaymentDetails({ navigation }) {
           marginBottom: 0,
         });
         navigation.navigate('UserPaymentDetailsConfirm', { id: result._id, item: items });
+        console.log('ID =>', id);
+
       }
   
       setloading(false);
