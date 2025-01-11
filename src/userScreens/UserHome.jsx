@@ -783,7 +783,7 @@ export default function UserProducts({navigation}) {
               <FlatList
                 data={searchproducts.slice(0, 4)}
                 renderItem={renderProductItem}
-                keyExtractor={(item, index) => item.id + index}
+                keyExtractor={(item, index) => item._id + index}
                 contentContainerStyle={styles.chunkListContainer}
                 numColumns={column}
               />

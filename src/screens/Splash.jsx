@@ -10,18 +10,17 @@ export default function Splash() {
 
   const getID = async () => {
     try {
-      const restuarantId = await AsyncStorage.getItem('restuarantId');
+      const buyerId = await AsyncStorage.getItem('buyerId');
       const supplierId = await AsyncStorage.getItem('supplierId');
-      console.log(restuarantId, 'restuarantId');
       console.log(supplierId, 'supplierId');
   
-      if (restuarantId && !supplierId) {
+      if (buyerId && !supplierId) {
         navigation.replace(ROUTES.AppDrawer);
-      } else if (restuarantId && supplierId) {
+      } else if (buyerId && supplierId) {
         navigation.replace(ROUTES.SupplierHome);
       } else {
-        //navigation.replace(ROUTES.UserSignin);
-        navigation.replace(ROUTES.AppDrawer);
+        navigation.replace(ROUTES.UserSignin);
+        // navigation.replace(ROUTES.AppDrawer);
 
       }
     } catch (error) {

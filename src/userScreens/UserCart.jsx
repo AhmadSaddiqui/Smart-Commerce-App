@@ -12,6 +12,7 @@ import { BaseurlSupplier } from '../Apis/apiConfig';
 
 export default function UserCart({ navigation }) {
   const cartItems = useSelector(state => state.cart.items);
+  console.log("art", JSON.stringify(cartItems, null, 2))
   const [loading, setloading] = useState(false);
   const [subTax, setSubTax] = useState(0);
   console.log(JSON.stringify(cartItems, null, 2))

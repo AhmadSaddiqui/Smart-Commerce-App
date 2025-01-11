@@ -21,23 +21,23 @@ export default function UserFavourites() {
 
 
   const fetchOrderHistory = async () => {
-    const restuarantId = await AsyncStorage.getItem('restuarantId')
-    const restaurantToken = await AsyncStorage.getItem('restuarantToken');
+    const buyerId = await AsyncStorage.getItem('buyerId')
+    const buyerToken = await AsyncStorage.getItem('buyerToken');
     const requestOptions = {
       method: "GET",
       headers: {
-        "x-access-token": restaurantToken,  // Include the en in the Authorization header
+        "x-access-token": buyerToken,  // Include the en in the Authorization header
         "Content-Type": "application/json"  // Assuming JSON format
       },
       redirect: "follow"
     };
 
     try {
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/order/history/${restuarantId}`, requestOptions);
+      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/order/history/${buyerId}`, requestOptions);
 
       const result = await response.json();
       console.log(result, 'myorders')
-      if (result?.message == 'No orders found for this restaurant.') {
+      if (result?.message == 'No orders found for this buyer.') {
         setProducts([])
       } else {
         setProducts(result); // Adjust based on the response structure
