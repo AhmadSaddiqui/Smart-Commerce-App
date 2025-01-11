@@ -14,7 +14,7 @@ export default function UserCart({ navigation }) {
   const cartItems = useSelector(state => state.cart.items);
   const [loading, setloading] = useState(false);
   const [subTax, setSubTax] = useState(0);
-  console.log(cartItems, "cartItems")
+  console.log(JSON.stringify(cartItems, null, 2))
   const dispatch = useDispatch();
   const [supplierCount, setSupplierCount] = useState(0);
 
@@ -90,7 +90,7 @@ export default function UserCart({ navigation }) {
   };
 
   const truncateTitle = (name, charLimit) => {
-    if (name.length > charLimit) {
+    if (name && name.length > charLimit) {
       return name.slice(0, charLimit) + '...';
     }
     return name;
@@ -123,7 +123,6 @@ export default function UserCart({ navigation }) {
     if (!timeAgo) {
       timeAgo = 'Just now';
     }
-
     return timeAgo;
   };
 

@@ -212,8 +212,8 @@ export default function UserProducts({navigation}) {
         </View>
         <Text style={styles.chunkTitle}>{item.name}</Text>
         <Text style={styles.chunkPrice}>
-          ${item.price}
-          <Text style={styles.chunkPriceUnit}> /kg</Text>
+        {item?.price && item.price.toFixed(2)} $
+          <Text style={styles.chunkPriceUnit}>.</Text>
         </Text>
         <View style={styles.chunkActions}>
           <TouchableOpacity
@@ -255,7 +255,7 @@ export default function UserProducts({navigation}) {
         </View>
         <Text style={styles.chunkTitle}>{item.name}</Text>
         <Text style={styles.chunkPrice}>
-          ${item.price}
+          {item?.price && item.price.toFixed(2)}
           <Text style={styles.chunkPriceUnit}>.</Text>
         </Text>
         <View style={styles.chunkActions}>
@@ -1029,8 +1029,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chunkImage: {
-    height: 120,
-    width: 120,
+    height: 100,
+    width: 100,
     resizeMode: 'contain',
   },
   chunkTitle: {

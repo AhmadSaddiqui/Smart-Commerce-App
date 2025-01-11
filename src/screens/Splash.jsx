@@ -20,8 +20,8 @@ export default function Splash() {
       } else if (restuarantId && supplierId) {
         navigation.replace(ROUTES.SupplierHome);
       } else {
-        navigation.replace(ROUTES.UserSignin);
-        //navigation.replace(ROUTES.AppDrawer);
+        //navigation.replace(ROUTES.UserSignin);
+        navigation.replace(ROUTES.AppDrawer);
 
       }
     } catch (error) {
