@@ -1,34 +1,38 @@
-import { 
-  View, 
-  Text, 
-  Image, 
-  TouchableOpacity, 
-  TextInput, 
-  FlatList, 
-  StyleSheet, 
-  ScrollView, 
-  StatusBar, 
-  Alert 
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  FlatList,
+  StyleSheet,
+  ScrollView,
+  StatusBar,
+  Alert,
 } from 'react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import themeStyle, { FONT } from '../styles/themeStyle';
-import { Categories, CHunk, Ribs } from '../data/dummy';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import themeStyle, {FONT} from '../styles/themeStyle';
+import {Categories, CHunk, Ribs} from '../data/dummy';
 import HomeHeader from '../components/HomeHeader';
-import { ROUTES } from '../routes/RoutesConstants';
-import { Buffer } from 'buffer';
+import {ROUTES} from '../routes/RoutesConstants';
+import {Buffer} from 'buffer';
 import GlobalButton from '../components/GlobalButton';
-import { addItemToCart } from '../redux/CartSlice';
-import { useDispatch } from 'react-redux';
+import {addItemToCart} from '../redux/CartSlice';
+import {useDispatch} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Snackbar from 'react-native-snackbar';
-import { PacmanIndicator } from 'react-native-indicators';
-import { useFocusEffect } from '@react-navigation/native';
+import {PacmanIndicator} from 'react-native-indicators';
+import {useFocusEffect} from '@react-navigation/native';
 import Loader from '../components/Loader';
-import { BaseurlBuyer, BaseurlCategory, BaseurlProducts } from '../Apis/apiConfig';
+import {
+  BaseurlBuyer,
+  BaseurlCategory,
+  BaseurlProducts,
+} from '../Apis/apiConfig';
 import axios from 'axios'; // Import axios for API calls
 
-export default function UserProducts({ navigation }) {
+export default function UserProducts({navigation}) {
   const flatListRef = useRef(null);
   const [lastloading, setlastloading] = useState(true);
   const dispatch = useDispatch();
@@ -48,8 +52,6 @@ export default function UserProducts({ navigation }) {
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState(null);
 
-  
-
   // Image Picker Options
   const imagePickerOptions = {
     mediaType: 'photo',
@@ -59,27 +61,30 @@ export default function UserProducts({ navigation }) {
   };
 
   const scrollToLeft = () => {
-    flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+    flatListRef.current.scrollToOffset({offset: 0, animated: true});
   };
 
   const scrollToRight = () => {
-    flatListRef.current.scrollToEnd({ animated: true });
+    flatListRef.current.scrollToEnd({animated: true});
   };
 
   const fetchMostRecentProduct = async () => {
     const buyerId = await AsyncStorage.getItem('buyerId');
     const buyerToken = await AsyncStorage.getItem('buyerToken');
     const requestOptions = {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "x-access-token": buyerToken,  // Include the token in the header
-        "Content-Type": "application/json"  // Assuming JSON format
+        'x-access-token': buyerToken, // Include the token in the header
+        'Content-Type': 'application/json', // Assuming JSON format
       },
-      redirect: "follow"
+      redirect: 'follow',
     };
 
     try {
-      const response = await fetch(`${BaseurlProducts}most-recent-product/${buyerId}`, requestOptions);
+      const response = await fetch(
+        `${BaseurlProducts}most-recent-product/${buyerId}`,
+        requestOptions,
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -92,7 +97,7 @@ export default function UserProducts({ navigation }) {
     }
   };
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({item}) => {
     // Check if the current item is selected
     const isSelected = item._id === selectedItemId;
 
@@ -101,11 +106,13 @@ export default function UserProducts({ navigation }) {
         style={[styles.item, isSelected && styles.selectedItem]} // Apply selected style conditionally
         onPress={() => {
           setSelectedItemId(item._id); // Update selected state on press
-          navigation.navigate(ROUTES.UserProducts, { item: item });
-        }}
-      >
+          navigation.navigate(ROUTES.UserProducts, {item: item});
+        }}>
         {/* Use the updated image URL for the emulator */}
-        <Image source={{ uri: item.image?.url.replace('localhost', '10.0.2.2') }} style={styles.image} />
+        <Image
+          source={{uri: item.image?.url.replace('localhost', '10.0.2.2')}}
+          style={styles.image}
+        />
         <Text style={styles.text}>{item.name}</Text>
       </TouchableOpacity>
     );
@@ -128,32 +135,34 @@ export default function UserProducts({ navigation }) {
   const ShowCategory = async () => {
     try {
       const requestOptions = {
-        method: "GET",
-        redirect: "follow"
+        method: 'GET',
+        redirect: 'follow',
       };
-    
+
       // Log the request URL for debugging
-      console.log("Requesting categories from:", `${BaseurlCategory}`);
-    
+      console.log('Requesting categories from:', `${BaseurlCategory}`);
+
       const response = await fetch(`${BaseurlCategory}`, requestOptions);
-    
+
       // Check if the response is successful
       if (!response.ok) {
         console.log('Failed to fetch categories. Status:', response.status);
         return;
       }
-    
+
       const result = await response.json();
-    
+
       // Log the result to see the data returned from the server
       console.log('Response from server:', result);
-    
+
       if (result?.categories) {
-        const activeCategories = result.categories.filter(category => category.status === 'Active');
-    
+        const activeCategories = result.categories.filter(
+          category => category.status === 'Active',
+        );
+
         // Log the active categories to see if filtering works
         console.log('Active Categories:', activeCategories);
-    
+
         setcategories(activeCategories);
         if (activeCategories.length > 0) {
           setSelectedItemId(activeCategories[0]._id); // Set the first item as selected
@@ -170,19 +179,24 @@ export default function UserProducts({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       ShowCategory();
-    }, [])
+    }, []),
   );
 
-  const renderProductItem = ({ item }) => {
+  const renderProductItem = ({item}) => {
     return (
       <TouchableOpacity
-        onPress={() => navigation.navigate('UserSingleItem', { item: item })}
-        style={styles.chunkItem}
-      >
-        <TouchableOpacity onPress={() => handleFavoritePress(item._id)} style={styles.heartButton}>
+        onPress={() => navigation.navigate('UserSingleItem', {item: item})}
+        style={styles.chunkItem}>
+        <TouchableOpacity
+          onPress={() => handleFavoritePress(item._id)}
+          style={styles.heartButton}>
           <Image
             style={styles.heartIcon}
-            source={isFavorite(item._id) ? require('../../assets/images/Home/heart.png') : require('../../assets/images/Home/greyheart.png')}
+            source={
+              isFavorite(item._id)
+                ? require('../../assets/images/Home/heart.png')
+                : require('../../assets/images/Home/greyheart.png')
+            }
           />
         </TouchableOpacity>
         <View style={styles.chunkImageContainer}>
@@ -190,7 +204,9 @@ export default function UserProducts({ navigation }) {
           <Image
             style={styles.chunkImage}
             source={{
-              uri: item.image?.url ? item.image.url.replace('localhost', '10.0.2.2') : require('../../assets/images/Home/4.png')
+              uri: item.image?.url
+                ? item.image.url.replace('localhost', '10.0.2.2')
+                : require('../../assets/images/Home/4.png'),
             }}
           />
         </View>
@@ -202,12 +218,14 @@ export default function UserProducts({ navigation }) {
         <View style={styles.chunkActions}>
           <TouchableOpacity
             onPress={() => {
-              dispatch(addItemToCart({ ...item, quantity }));
+              dispatch(addItemToCart({...item, quantity}));
               navigation.navigate('UserCart');
             }}
-            style={styles.cartButton}
-          >
-            <Image style={styles.cartIcon} source={require('../../assets/images/Home/whitecart.png')} />
+            style={styles.cartButton}>
+            <Image
+              style={styles.cartIcon}
+              source={require('../../assets/images/Home/whitecart.png')}
+            />
             <Text style={styles.cartText}>Add to cart</Text>
           </TouchableOpacity>
         </View>
@@ -215,17 +233,25 @@ export default function UserProducts({ navigation }) {
     );
   };
 
-  const renderProductItem1 = ({ item }) => {
+  const renderProductItem1 = ({item}) => {
     return (
       <TouchableOpacity
-        onPress={() => navigation.navigate('UserSingleItem', { item: item })}
-        style={styles.chunkItem}
-      >
-        <TouchableOpacity onPress={() => handleFavoritePress(item._id)} style={styles.heartButton}>
-          <Image style={styles.heartIcon} source={isFavorite(item._id) ? require('../../assets/images/Home/heart.png') : require('../../assets/images/Home/greyheart.png')} />
+        onPress={() => navigation.navigate('UserSingleItem', {item: item})}
+        style={styles.chunkItem}>
+        <TouchableOpacity
+          onPress={() => handleFavoritePress(item._id)}
+          style={styles.heartButton}>
+          <Image
+            style={styles.heartIcon}
+            source={
+              isFavorite(item._id)
+                ? require('../../assets/images/Home/heart.png')
+                : require('../../assets/images/Home/greyheart.png')
+            }
+          />
         </TouchableOpacity>
         <View style={styles.chunkImageContainer}>
-          <Image style={styles.chunkImage} source={{ uri: item?.image }} />
+          <Image style={styles.chunkImage} source={{uri: item?.image}} />
         </View>
         <Text style={styles.chunkTitle}>{item.name}</Text>
         <Text style={styles.chunkPrice}>
@@ -235,32 +261,34 @@ export default function UserProducts({ navigation }) {
         <View style={styles.chunkActions}>
           <TouchableOpacity
             onPress={() => {
-              dispatch(addItemToCart({ ...item, quantity }));
+              dispatch(addItemToCart({...item, quantity}));
               navigation.navigate('UserCart');
             }}
-            style={styles.cartButton}
-          >
-            <Image style={styles.cartIcon} source={require('../../assets/images/Home/whitecart.png')} />
+            style={styles.cartButton}>
+            <Image
+              style={styles.cartIcon}
+              source={require('../../assets/images/Home/whitecart.png')}
+            />
             <Text style={styles.cartText}>Add to cart</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
-    )
+    );
   };
 
-  const renderSubcategoryChunk = ({ item }) => (
+  const renderSubcategoryChunk = ({item}) => (
     <View style={styles.chunkContainer}>
       <FlatList
         data={item.products}
         renderItem={renderProductItem1}
-        keyExtractor={(product) => product._id}
+        keyExtractor={product => product._id}
         numColumns={column}
         contentContainerStyle={styles.chunkListContainer}
       />
     </View>
   );
 
-  const renderCategoryChunk = ({ item }) => (
+  const renderCategoryChunk = ({item}) => (
     <View>
       <FlatList
         data={item?.subcategories?.slice(0, 2)}
@@ -273,7 +301,9 @@ export default function UserProducts({ navigation }) {
   const fetchFavoriteProducts = async () => {
     const buyerId = await AsyncStorage.getItem('buyerId');
     try {
-      const response = await fetch(`${BaseurlBuyer}/get-favorite-products/${buyerId}`);
+      const response = await fetch(
+        `${BaseurlBuyer}/get-favorite-products/${buyerId}`,
+      );
       const result = await response.json();
       setFavorites(result.favorites || []);
     } catch (error) {
@@ -286,19 +316,22 @@ export default function UserProducts({ navigation }) {
       const buyerId = await AsyncStorage.getItem('buyerId');
       const buyerToken = await AsyncStorage.getItem('buyerToken');
       const requestOptions = {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "x-access-token": buyerToken,  // Include the token in the header
-          "Content-Type": "application/json"  // Assuming JSON format
+          'x-access-token': buyerToken, // Include the token in the header
+          'Content-Type': 'application/json', // Assuming JSON format
         },
-        redirect: "follow"
+        redirect: 'follow',
       };
-      const response = await fetch(`${BaseurlProducts}most-selling-product/${buyerId}`, requestOptions);
+      const response = await fetch(
+        `${BaseurlProducts}most-selling-product/${buyerId}`,
+        requestOptions,
+      );
       const result = await response.json(); // Assuming the API returns JSON
-      console.log("most selling products", result, "products");
+      console.log('most selling products', result, 'products');
       const productsWithImages = result.products?.map(product => ({
         ...product,
-        image: getRandomImage()
+        image: getRandomImage(),
       }));
 
       setproducts(result);
@@ -317,26 +350,29 @@ export default function UserProducts({ navigation }) {
     fetchFavoriteProducts();
   }, [selectedItemId]);
 
-  const addFavoriteProduct = async (productId) => {
+  const addFavoriteProduct = async productId => {
     setFavLoad(true);
     const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
+      myHeaders.append('Content-Type', 'application/json');
 
       const raw = JSON.stringify({
         productId: productId,
-        buyerId: buyerId
+        buyerId: buyerId,
       });
 
       const requestOptions = {
-        method: "POST",
+        method: 'POST',
         headers: myHeaders,
         body: raw,
-        redirect: "follow"
+        redirect: 'follow',
       };
 
-      const response = await fetch(`${BaseurlBuyer}/add-favorite-product`, requestOptions);
+      const response = await fetch(
+        `${BaseurlBuyer}/add-favorite-product`,
+        requestOptions,
+      );
       const result = await response.json();
       setFavLoad(false);
       Snackbar.show({
@@ -348,33 +384,36 @@ export default function UserProducts({ navigation }) {
       });
 
       // Update the favorites list
-      setFavorites([...favorites, { _id: productId }]);
+      setFavorites([...favorites, {_id: productId}]);
     } catch (error) {
       console.error('Error adding favorite product:', error);
       setFavLoad(false);
     }
   };
 
-  const removeFavoriteProduct = async (productId) => {
+  const removeFavoriteProduct = async productId => {
     setFavLoad(true);
     const buyerId = await AsyncStorage.getItem('buyerId');
     try {
       const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
+      myHeaders.append('Content-Type', 'application/json');
 
       const raw = JSON.stringify({
         productId: productId,
-        buyerId: buyerId
+        buyerId: buyerId,
       });
 
       const requestOptions = {
-        method: "PUT",
+        method: 'PUT',
         headers: myHeaders,
         body: raw,
-        redirect: "follow"
+        redirect: 'follow',
       };
 
-      const response = await fetch(`${BaseurlBuyer}/delete-favorite-product`, requestOptions);
+      const response = await fetch(
+        `${BaseurlBuyer}/delete-favorite-product`,
+        requestOptions,
+      );
       const result = await response.json();
 
       setFavLoad(false);
@@ -387,18 +426,18 @@ export default function UserProducts({ navigation }) {
       });
 
       // Update the favorites list
-      setFavorites(favorites.filter((item) => item._id !== productId));
+      setFavorites(favorites.filter(item => item._id !== productId));
     } catch (error) {
       console.error('Error removing favorite product:', error);
       setFavLoad(false);
     }
   };
 
-  const isFavorite = (productId) => {
-    return favorites.some((item) => item._id === productId);
+  const isFavorite = productId => {
+    return favorites.some(item => item._id === productId);
   };
 
-  const handleFavoritePress = (productId) => {
+  const handleFavoritePress = productId => {
     if (isFavorite(productId)) {
       removeFavoriteProduct(productId);
     } else {
@@ -413,7 +452,7 @@ export default function UserProducts({ navigation }) {
    * @param {string} uri - The URI of the image.
    * @returns {Promise<string>} - A promise that resolves to the base64 string of the image.
    */
-  const uriToBase64 = async (uri) => {
+  const uriToBase64 = async uri => {
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
@@ -441,12 +480,14 @@ export default function UserProducts({ navigation }) {
    * @param {string} base64Image - The base64 string of the image.
    * @returns {Promise<string[]>} - A promise that resolves to an array of tags.
    */
-  const generateTagsFromImagga = async (base64Image) => {
-    const imaggaApiKey = "acc_2d1b8c44c6a251d";
-    const imaggaApiSecret = "a4bece68eb91e737f351872f7b5a7087";
-    const apiUrl = "https://api.imagga.com/v2/tags";
+  const generateTagsFromImagga = async base64Image => {
+    const imaggaApiKey = 'acc_2d1b8c44c6a251d';
+    const imaggaApiSecret = 'a4bece68eb91e737f351872f7b5a7087';
+    const apiUrl = 'https://api.imagga.com/v2/tags';
 
-    const authHeader = 'Basic ' + Buffer.from(`${imaggaApiKey}:${imaggaApiSecret}`).toString('base64');
+    const authHeader =
+      'Basic ' +
+      Buffer.from(`${imaggaApiKey}:${imaggaApiSecret}`).toString('base64');
 
     const formData = new FormData();
     formData.append('image_base64', base64Image);
@@ -454,14 +495,14 @@ export default function UserProducts({ navigation }) {
     try {
       const response = await axios.post(apiUrl, formData, {
         headers: {
-          'Authorization': authHeader,
+          Authorization: authHeader,
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      const tags = response.data.result.tags.map((tag) => tag.tag.en);
+      const tags = response.data.result.tags.map(tag => tag.tag.en);
 
-      console.log("Yehb tags ha ",tags);
+      console.log('Yehb tags ha ', tags);
       return tags;
     } catch (error) {
       console.error('Failed to read image using Imagga API:', error);
@@ -473,7 +514,7 @@ export default function UserProducts({ navigation }) {
    * Handles the generation of tags from the selected image.
    * @param {string} imageUri - The URI of the selected image.
    */
-  const handleGenerateTags = async (imageUri) => {
+  const handleGenerateTags = async imageUri => {
     if (!imageUri) return;
 
     try {
@@ -508,28 +549,33 @@ export default function UserProducts({ navigation }) {
    * Handles searching for products based on the generated tags.
    * @param {string[]} tags - An array of tags extracted from the image.
    */
-  const handleSearchByTags = async (tags) => {
+  const handleSearchByTags = async tags => {
     try {
       const buyerToken = await AsyncStorage.getItem('buyerToken');
       const requestOptions = {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "x-access-token": buyerToken,
-          "Content-Type": "application/json"
+          'x-access-token': buyerToken,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ tags }),
-        redirect: "follow"
+        body: JSON.stringify({tags}),
+        redirect: 'follow',
       };
 
-      const response = await fetch(`${BaseurlProducts}/search-by-tags`, requestOptions);
+      const response = await fetch(
+        `${BaseurlProducts}/search-by-tags`,
+        requestOptions,
+      );
 
       if (!response.ok) {
         const errorResult = await response.json();
-        throw new Error(errorResult.message || 'Error searching products by tags');
+        throw new Error(
+          errorResult.message || 'Error searching products by tags',
+        );
       }
 
       const searchResults = await response.json();
-      console.log('Search Results:',JSON.stringify(searchResults,null,2));
+      console.log('Search Results:', JSON.stringify(searchResults, null, 2));
 
       if (searchResults.length === 0) {
         Snackbar.show({
@@ -556,7 +602,7 @@ export default function UserProducts({ navigation }) {
   // ------------------ Image Picker Functions ------------------
 
   const openCamera = () => {
-    launchCamera(imagePickerOptions, async (response) => {
+    launchCamera(imagePickerOptions, async response => {
       if (response.didCancel) {
         console.log('User cancelled camera picker');
       } else if (response.errorCode) {
@@ -584,7 +630,7 @@ export default function UserProducts({ navigation }) {
   };
 
   const openGallery = () => {
-    launchImageLibrary(imagePickerOptions, async (response) => {
+    launchImageLibrary(imagePickerOptions, async response => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.errorCode) {
@@ -630,16 +676,14 @@ export default function UserProducts({ navigation }) {
           style: 'cancel',
         },
       ],
-      { cancelable: true }
+      {cancelable: true},
     );
   };
 
   // ------------------ Render Logic ------------------
 
   if (lastloading) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
   return (
@@ -655,13 +699,15 @@ export default function UserProducts({ navigation }) {
             placeholder="Search..."
             placeholderTextColor="#888"
             // Add other TextInput props as needed
-            onChangeText={(text) => {
+            onChangeText={text => {
               // Handle search input change
               // You can implement search functionality here
               console.log('Search query:', text);
             }}
           />
-          <TouchableOpacity onPress={handleImagePicker} style={styles.cameraButton}>
+          <TouchableOpacity
+            onPress={handleImagePicker}
+            style={styles.cameraButton}>
             <Image
               style={styles.cameraIcon}
               source={require('../../assets/images/Home/Uimage.png')} // Ensure you have a camera icon
@@ -671,7 +717,7 @@ export default function UserProducts({ navigation }) {
 
         {/* Optionally display the selected image */}
         {selectedImage && (
-          <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
+          <Image source={{uri: selectedImage}} style={styles.selectedImage} />
         )}
 
         {/* Show loading indicator for image-based search */}
@@ -686,10 +732,16 @@ export default function UserProducts({ navigation }) {
         <View style={styles.categoriesHeader}>
           <Text style={styles.categoriesTitle}>Categories</Text>
           <TouchableOpacity onPress={scrollToLeft} style={styles.leftArrow}>
-            <Image style={styles.arrowIcon} source={require('../../assets/images/Home/left.png')} />
+            <Image
+              style={styles.arrowIcon}
+              source={require('../../assets/images/Home/left.png')}
+            />
           </TouchableOpacity>
           <TouchableOpacity onPress={scrollToRight} style={styles.rightArrow}>
-            <Image style={styles.arrowIcon} source={require('../../assets/images/Home/right.png')} />
+            <Image
+              style={styles.arrowIcon}
+              source={require('../../assets/images/Home/right.png')}
+            />
           </TouchableOpacity>
         </View>
 
@@ -699,31 +751,75 @@ export default function UserProducts({ navigation }) {
           horizontal
           data={categories}
           renderItem={renderItem}
-          keyExtractor={(item) => item._id}
+          keyExtractor={item => item._id}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.flatListContainer}
         />
+        {searchproducts && searchproducts.length > 0 ? (
+          <>
+            <View style={styles.chunkHeader}>
+              <Text style={styles.categoriesTitle}>Most Similar Products</Text>
+            </View>
 
-        {/* Latest Products Header */}
-        <View style={styles.chunkHeader}>
-          <Text style={styles.categoriesTitle}>Latest Products</Text>
-          {/* Uncomment if you want a "View All" button */}
-          {/* 
+            {/* Similar Products FlatList */}
+            {loading ? (
+              <PacmanIndicator
+                color={themeStyle.PRIMARY_COLOR}
+                size={70}
+                style={{marginTop: 150}}
+              />
+            ) : recent?.length === 0 ? (
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text style={{fontSize: 20, color: 'black', marginTop: '50%'}}>
+                  No Products Yet!
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={searchproducts.slice(0, 4)}
+                renderItem={renderProductItem}
+                keyExtractor={(item, index) => item.id + index}
+                contentContainerStyle={styles.chunkListContainer}
+                numColumns={column}
+              />
+            )}
+          </>
+        ) : (
+          <>
+            {/* Latest Products Header */}
+            <View style={styles.chunkHeader}>
+              <Text style={styles.categoriesTitle}>Latest Products</Text>
+              {/* Uncomment if you want a "View All" button */}
+              {/* 
           <TouchableOpacity onPress={() => navigation.navigate(ROUTES.AllProducts)} style={styles.viewAll}>
             <Text style={styles.viewAllText}>View All</Text>
             <Image resizeMode='contain' style={styles.arrowIcon} source={require('../../assets/images/Home/arrow2.png')} />
           </TouchableOpacity> 
           */}
-        </View>
+            </View>
 
-        {/* Latest Products FlatList */}
-        {
-          loading ? (
-            <PacmanIndicator color={themeStyle.PRIMARY_COLOR} size={70} style={{ marginTop: 150 }} />
-          ) :
-            recent?.length === 0 ? (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
-                <Text style={{ fontSize: 20, color: "black", marginTop: "50%" }}>No Products Yet!</Text>
+            {/* Latest Products FlatList */}
+            {loading ? (
+              <PacmanIndicator
+                color={themeStyle.PRIMARY_COLOR}
+                size={70}
+                style={{marginTop: 150}}
+              />
+            ) : recent?.length === 0 ? (
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text style={{fontSize: 20, color: 'black', marginTop: '50%'}}>
+                  No Products Yet!
+                </Text>
               </View>
             ) : (
               <FlatList
@@ -733,29 +829,37 @@ export default function UserProducts({ navigation }) {
                 contentContainerStyle={styles.chunkListContainer}
                 numColumns={column}
               />
-            )
-        }
+            )}
 
-        {/* Most Selling Products Header */}
-        <View style={styles.chunkHeader}>
-          <Text style={styles.categoriesTitle}>Most Selling</Text>
-          {/* Uncomment if you want a "View All" button */}
-          {/* 
+            {/* Most Selling Products Header */}
+            <View style={styles.chunkHeader}>
+              <Text style={styles.categoriesTitle}>Most Selling</Text>
+              {/* Uncomment if you want a "View All" button */}
+              {/* 
           <TouchableOpacity onPress={() => navigation.navigate(ROUTES.AllProducts)} style={styles.viewAll}>
             <Text style={styles.viewAllText}>View All</Text>
             <Image resizeMode='contain' style={styles.arrowIcon} source={require('../../assets/images/Home/arrow2.png')} />
           </TouchableOpacity> 
           */}
-        </View>
+            </View>
 
-        {/* Most Selling Products FlatList */}
-        {
-          loading ? (
-            <PacmanIndicator color={themeStyle.PRIMARY_COLOR} size={70} style={{ marginTop: 150 }} />
-          ) :
-            products?.length === 0 ? (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
-                <Text style={{ fontSize: 20, color: "black", marginTop: "50%" }}>No Products Yet!</Text>
+            {/* Most Selling Products FlatList */}
+            {loading ? (
+              <PacmanIndicator
+                color={themeStyle.PRIMARY_COLOR}
+                size={70}
+                style={{marginTop: 150}}
+              />
+            ) : products?.length === 0 ? (
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text style={{fontSize: 20, color: 'black', marginTop: '50%'}}>
+                  No Products Yet!
+                </Text>
               </View>
             ) : (
               <FlatList
@@ -765,8 +869,9 @@ export default function UserProducts({ navigation }) {
                 contentContainerStyle={styles.chunkListContainer}
                 numColumns={column}
               />
-            )
-        }
+            )}
+          </>
+        )}
 
         <View style={styles.footerSpace} />
       </ScrollView>
@@ -885,7 +990,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: '5%',
     marginTop: '5%',
-    width: "90%"
+    width: '90%',
   },
   viewAll: {
     marginLeft: 'auto',
