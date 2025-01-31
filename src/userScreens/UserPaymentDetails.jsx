@@ -133,13 +133,6 @@ export default function UserPaymentDetails({ navigation }) {
   
     } catch (error) {
       console.error('There was an error placing the order:', error);
-      Snackbar.show({
-        text: 'There was an error placing the order. Please try again later.',
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'rgba(212, 4, 28, 1)', // Custom error color
-        textColor: 'white',
-        marginBottom: 0,
-      });
       setloading(false);
     }
   };

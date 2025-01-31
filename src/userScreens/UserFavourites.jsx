@@ -59,6 +59,8 @@ export default function UserFavourites({ navigation }) {
   const renderItem = ({ item }) => {
     const isSelected = selectedItems.some(selectedItem => selectedItem._id === item._id);
 
+    console.log("Yeh item ha",item )
+
 
     return (
       <TouchableOpacity onPress={() => toggleSelection(item)}>
@@ -68,21 +70,21 @@ export default function UserFavourites({ navigation }) {
         ]}>
           <View style={styles.cartItemRow}>
             <View style={styles.imageContainer}>
-              <Image resizeMode='contain' style={styles.cartItemImage} source={item.image} />
+              <Image resizeMode='contain' style={styles.cartItemImage}  source={{ uri: item?.image?.url.replace('localhost', '10.0.2.2') }} />
             </View>
             <View>
               <View>
                 <Text style={styles.itemTitle} numberOfLines={1}>
+          
                   {truncateTitle(item.name, 15)}
                 </Text>
-                <Text style={styles.itemQuantity}>*{item?.price} (≈1000-1100g)</Text>
-                <Text style={[styles.itemQuantity, { marginTop: '2%' }]}>2.2km I</Text>
+                
               </View>
               <View style={styles.quantityContainer}>
                 <TouchableOpacity onPress={decrementQuantity} style={styles.decrementButton}>
                   <Image style={styles.minusIcon} source={require('../../assets/images/SingleItem/minus.png')} />
                 </TouchableOpacity>
-                <Text style={styles.quantityText}>{quantity}Kg</Text>
+                <Text style={styles.quantityText}>{quantity}.</Text>
                 <TouchableOpacity onPress={incrementQuantity} style={styles.incrementButton}>
                   <Image style={styles.plusIcon} source={require('../../assets/images/SingleItem/plus.png')} />
                 </TouchableOpacity>
@@ -121,8 +123,9 @@ export default function UserFavourites({ navigation }) {
       console.log(result, 'Fetch Favorites');
       const productsWithImages = result.favorites?.map(product => ({
         ...product,
-        image: getRandomImage()
+
       }));
+      console.log
       setFavorites(productsWithImages);
     } catch (error) {
       console.error('Error fetching favorite products:', error);
@@ -170,11 +173,12 @@ export default function UserFavourites({ navigation }) {
 
               <GlobalButton onPress={() => {
                 selectedItems.forEach(item => {
+                  console.log("Item check",item)
                   const transformedItem = {
                     "_id": item._id,
                     "category": item?.category, // Manually setting the value
                     "description": "", // Manually setting the value
-                    "image": "https://media.istockphoto.com/id/935316446/photo/fresh-raw-rib-eye-steaks-isolated-on-white.jpg?s=612x612&w=0&k=20&c=UBnLccI6y47Vynuxa2BybZS0jPUtEqpJvL4LzVgGSOg=", // Manually setting the value
+                    "image": item?.image?.url, // Manually setting the value
                     "name": item?.name, // Manually setting the value
                     "price": item?.price, // Manually setting the value
                     "status": item?.status, // Manually setting the value
@@ -241,8 +245,8 @@ const styles = StyleSheet.create({
 
   },
   cartItemImage: {
-    width: 46,
-    height: 38,
+    width: 76,
+    height: 78,
   },
   itemTitle: {
     fontFamily: FONT.ManropeSemiBold,

@@ -3,8 +3,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import themeStyle, { FONT } from '../styles/themeStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import GlobalButton from '../components/GlobalButton';
-import GlobalButton2 from '../components/GlobalButton2';
-import GlobalButton3 from '../components/GlobalButton3';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { addItemToCart } from '../redux/CartSlice';
@@ -20,14 +18,13 @@ export default function UserFavourites() {
   const cartItems = useSelector(state => state.cart.items);
   console.log(cartItems, '---')
 
-
   const fetchOrderHistory = async () => {
-    const buyerId = await AsyncStorage.getItem('buyerId')
+    const buyerId = await AsyncStorage.getItem('buyerId');
     const buyerToken = await AsyncStorage.getItem('buyerToken');
     const requestOptions = {
       method: "GET",
       headers: {
-        "x-access-token": buyerToken,  // Include the en in the Authorization header
+        "x-access-token": buyerToken,  // Include the token in the Authorization header
         "Content-Type": "application/json"  // Assuming JSON format
       },
       redirect: "follow"
@@ -35,11 +32,9 @@ export default function UserFavourites() {
 
     try {
       const response = await fetch(`${BaseurlOrder}/history/${buyerId}`, requestOptions);
-
       const result = await response.json();
-      console.log(result, 'myorders')
-      if (result?.message == 'No orders found for this buyer.') {
-        setProducts([])
+      if (result?.message === 'No orders found for this buyer.') {
+        setProducts([]);
       } else {
         setProducts(result); // Adjust based on the response structure
       }
@@ -48,13 +43,11 @@ export default function UserFavourites() {
     }
   };
 
-
-
   useFocusEffect(
     useCallback(() => {
       fetchOrderHistory();
     }, [])
-  )
+  );
 
   const truncateTitle = (title, charLimit) => {
     if (title?.length > charLimit) {
@@ -64,27 +57,23 @@ export default function UserFavourites() {
   };
 
   const renderItem = ({ item }) => {
-
-
     return (
       <View style={styles.cartItemContainer}>
         <View style={styles.cartItemRow}>
-          <View style={styles.imageContainer}>
-           
-          </View>
           <View>
             {item?.items?.map((product, index) => (
-              <View key={index}>
-                <Text style={styles.itemTitle}>
-                  {truncateTitle(product?.productId?.name, 15)}
-                </Text>
+              <View key={index} style={styles.itemDetails}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: product?.productId?.image?.url.replace('localhost', '10.0.2.2') }}
+                    style={styles.productImage}
+                  />
+                </View>
+                <Text style={styles.itemTitle}>{truncateTitle(product?.productId?.name, 15)}</Text>
                 <Text style={styles.itemQuantity}>Quantity : {product.quantity}</Text>
-                <Text style={styles.itemQuantity}>Price : {product.price}</Text>
+                <Text style={styles.itemQuantity}>Price : ${product.price}</Text>
               </View>
             ))}
-            {/* <Text style={[styles.itemQuantity, { marginTop: '1%' }]}>
-              Deliver Date : {new Date(item.orderDate).toLocaleDateString()}
-            </Text> */}
           </View>
           <View style={styles.statusContainer}>
             <Text style={styles.statusText}>{item.status}</Text>
@@ -92,9 +81,9 @@ export default function UserFavourites() {
         </View>
         <View style={styles.itemFooter}>
           <Text style={styles.itemPrice}>Total Amount</Text>
-          <Text style={styles.itemPrice}>${item.totalAmount} I {item.items.length}</Text>
+          <Text style={styles.itemPrice}>${item.totalAmount} | {item.items.length} Items</Text>
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
+        <View style={styles.buttonsRow}>
           <TouchableOpacity onPress={() => {
             setSelectedOrder(item);
             setModalVisible(true);
@@ -106,43 +95,38 @@ export default function UserFavourites() {
               item?.items?.forEach(item => {
                 const transformedItem = {
                   "_id": item?.productId?._id,
-                  "category": item?.productId?.category, // Manually setting the value
-                  "description": "", // Manually setting the value
-                  "image": "https://media.istockphoto.com/id/935316446/photo/fresh-raw-rib-eye-steaks-isolated-on-white.jpg?s=612x612&w=0&k=20&c=UBnLccI6y47Vynuxa2BybZS0jPUtEqpJvL4LzVgGSOg=", // Manually setting the value
-                  "name": item?.productId?.name, // Manually setting the value
-                  "price": item?.price, // Manually setting the value
-                  "status": item?.status, // Manually setting the value
-                  "subcategory": "", // Manually setting the value
+                  "category": item?.productId?.category,
+                  "description": "",
+                  "image": item?.productId?.image?.url,
+                  "name": item?.productId?.name,
+                  "price": item?.price,
+                  "status": item?.status,
+                  "subcategory": "",
                   "supplierId": item?.supplierId._id,
-                  "weight": "", // Manually setting the value
-                  "quantity": item?.quantity, // Keeping the original quantity
+                  "weight": "",
+                  "quantity": item?.quantity,
                 };
-
                 dispatch(addItemToCart(transformedItem));
                 navigation.navigate('UserCart');
               });
-
-              // Optional: Navigate to the UserCart screen after adding items to the cart
-
             }}
             style={styles.cartButton}
             otherStyles={{
               width: '45%',
-              backgroundColor: 'transparent',
-              borderColor: themeStyle.PRIMARY_COLOR,
+              backgroundColor: themeStyle.PRIMARY_COLOR,
               borderWidth: 1,
             }}
             textOtherStyle={{
-              color: themeStyle.PRIMARY_COLOR,
+              color: themeStyle.WHITE,
             }}
             height={40}
             title={'Re Order Now'}
           />
         </View>
-
       </View>
-    )
+    );
   };
+
   const renderModalContent = () => (
     <View style={styles.modalContent}>
       {selectedOrder && (
@@ -150,19 +134,19 @@ export default function UserFavourites() {
           <Text style={styles.modalTitle}>Order Details</Text>
           <View style={styles.detailContainer}>
             <Text style={styles.detailLabel}>Order Date:</Text>
-            <Text style={[styles.detailValue, { width: 100 }]}>{new Date(selectedOrder?.orderDate).toLocaleDateString()}</Text>
+            <Text style={styles.detailValue}>{new Date(selectedOrder?.orderDate).toLocaleDateString()}</Text>
           </View>
           <View style={styles.detailContainer}>
             <Text style={styles.detailLabel}>Shipping Address:</Text>
-            <Text style={[styles.detailValue, { width: 100 }]}>{selectedOrder?.shippingAddress}</Text>
+            <Text style={styles.detailValue}>{selectedOrder?.shippingAddress}</Text>
           </View>
           <View style={styles.detailContainer}>
             <Text style={styles.detailLabel}>Billing Address:</Text>
-            <Text style={[styles.detailValue, { width: 100 }]}>{selectedOrder?.billingAddress}</Text>
+            <Text style={styles.detailValue}>{selectedOrder?.billingAddress}</Text>
           </View>
           <View style={styles.detailContainer}>
             <Text style={styles.detailLabel}>Total Amount:</Text>
-            <Text style={[styles.detailValue, { width: 100 }]}>${selectedOrder?.totalAmount}</Text>
+            <Text style={styles.detailValue}>${selectedOrder?.totalAmount}</Text>
           </View>
           <Text style={styles.itemsTitle}>Items:</Text>
           {selectedOrder?.items.map((item, index) => (
@@ -176,27 +160,25 @@ export default function UserFavourites() {
     </View>
   );
 
-  console.log('products ==>', products);
-
   return (
     <View style={styles.container}>
       {
-        products?.length == 0 ? (
-          <View style={{ flex: 1 }}>
+        products?.length === 0 ? (
+          <View style={styles.emptyState}>
             <View style={styles.header}>
               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <Image resizeMode='contain' style={styles.backIcon} source={require('../../assets/images/Cart/back.png')} />
               </TouchableOpacity>
-              <Text style={styles.headerTitle}>Products</Text>
+              <Text style={styles.headerTitle}>My Orders</Text>
             </View>
             <Empty
               otherViews={
-                <Image resizeMode='contain' style={{ height: 220, width: 220 }} source={require('../../assets/images/Cart/UserCartEmpty.png')} />
+                <Image resizeMode='contain' style={styles.emptyImage} source={require('../../assets/images/Cart/UserCartEmpty.png')} />
               }
             />
           </View>
         ) : (
-          <ScrollView>
+          <ScrollView contentContainerStyle={styles.scrollView}>
             <View style={styles.header}>
               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <Image resizeMode='contain' style={styles.backIcon} source={require('../../assets/images/Cart/back.png')} />
@@ -204,22 +186,17 @@ export default function UserFavourites() {
               <Text style={styles.headerTitle}>My Orders</Text>
             </View>
 
-            <View>
-              <FlatList
-                showsVerticalScrollIndicator={false}
-                style={{ paddingBottom: '15%' }}
-                data={products}
-                renderItem={renderItem}
-                keyExtractor={item => item._id}
-              />
-            </View>
-            {/* <GlobalButton3 marginTop={'5%'} height={40} title={'Bulk Order'} /> */}
-
+            <FlatList
+              data={products}
+              renderItem={renderItem}
+              keyExtractor={item => item._id}
+              contentContainerStyle={styles.flatList}
+            />
             <View style={styles.bottomSpacer} />
           </ScrollView>
-
         )
       }
+
       <Modal
         transparent={true}
         visible={modalVisible}
@@ -238,110 +215,134 @@ export default function UserFavourites() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themeStyle.WHITE,
+    backgroundColor: themeStyle.BACKGROUND_COLOR, // Soft background color
+    paddingHorizontal: 20,
   },
   header: {
-    height: 70,
+    height: 80,
     backgroundColor: themeStyle.WHITE,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 20,
   },
   backButton: {
-    marginLeft: '8%',
+    width: 30,
+    height: 30,
   },
   backIcon: {
-    width: 24,
-    height: 28,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
   headerTitle: {
-    fontSize: 18,
-    color: themeStyle.BLACK,
-    marginLeft: '25%',
+    fontSize: 20,
     fontFamily: FONT.ManropeSemiBold,
+    color: themeStyle.BLACK,
   },
   cartItemContainer: {
-    height: 220,
-    width: '94%',
     backgroundColor: themeStyle.WHITE,
-    borderRadius: 10,
-    borderColor: themeStyle.bgcItem,
-    borderWidth: 2,
-    alignSelf: 'center',
-    marginTop: '6%',
-    justifyContent: 'center',
-    elevation: .5
+    borderRadius: 12,
+    borderColor: themeStyle.LIGHT_GREY,
+    borderWidth: 1,
+    marginVertical: 10,
+    padding: 15,
+    elevation: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
   },
   cartItemRow: {
     flexDirection: 'row',
+    marginBottom: 15,
+  },
+  itemDetails: {
+    flex: 1,
+    marginRight: 10,
   },
   imageContainer: {
     height: 80,
     width: 80,
-    elevation: .5,
-    backgroundColor: themeStyle.WHITE,
-    borderColor: themeStyle.bgcItem,
-    borderWidth: .5,
+    backgroundColor: themeStyle.LIGHT_GREY,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: '5%',
-    right: 10,
+    marginBottom: 10,
   },
-  cartItemImage: {
-    width: 60,
-    height: 60,
+  productImage: {
+    width: '100%',
+    height: '100%',
     resizeMode: 'contain',
   },
   itemTitle: {
     fontFamily: FONT.ManropeSemiBold,
     color: themeStyle.BLACK,
     fontSize: 16,
+    marginBottom: 5,
   },
   itemQuantity: {
-    fontFamily: FONT.ManropeBold,
+    fontFamily: FONT.ManropeRegular,
     color: themeStyle.TEXT_GREY,
-    fontSize: 12,
+    fontSize: 14,
+    marginBottom: 5,
   },
   statusContainer: {
-    marginLeft: 'auto',
-    marginRight: '5%',
-    backgroundColor: 'rgba(221, 254, 225, 1)',
-    width: 61,
-    height: 22,
-    borderRadius: 30,
-    alignItems: 'center',
+    backgroundColor: themeStyle.STATUS_BG,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 12,
     justifyContent: 'center',
   },
   statusText: {
-    fontSize: 10,
-    color: 'rgba(0, 149, 15, 1)',
+    fontFamily: FONT.ManropeRegular,
+    color: themeStyle.STATUS_COLOR,
+    fontSize: 12,
   },
   itemFooter: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    margin: '5%',
-    // bottom: 8,
+    alignItems: 'center',
   },
   itemPrice: {
-    fontSize: 14,
     fontFamily: FONT.ManropeBold,
+    fontSize: 14,
     color: themeStyle.TEXT_GREY,
+  },
+  buttonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   viewDetailsButton: {
-    flexDirection: 'row',
+    backgroundColor: themeStyle.LIGHT_GREY,
+    padding: 10,
+    borderRadius: 8,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: themeStyle.WHITE,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: themeStyle.TEXT_GREY,
-    width: '45%',
   },
   viewDetails: {
-    fontSize: 18,
+    color: themeStyle.PRIMARY_COLOR,
     fontFamily: FONT.ManropeSemiBold,
-    color: themeStyle.TEXT_GREY,
+    fontSize: 16,
+  },
+  cartButton: {
+    flex: 1,
+    backgroundColor: themeStyle.PRIMARY_COLOR,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  scrollView: {
+    paddingBottom: 20,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyImage: {
+    height: 220,
+    width: 220,
   },
   bottomSpacer: {
     height: 20,
@@ -353,71 +354,45 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContainer: {
-    width: '90%',
+    width: '80%',
     backgroundColor: themeStyle.WHITE,
     padding: 20,
-    borderRadius: 10,
-  },
-  modalContent: {
-    alignItems: 'center',
+    borderRadius: 12,
+    elevation: 10,
   },
   modalTitle: {
     fontSize: 18,
     fontFamily: FONT.ManropeSemiBold,
-    marginBottom: 10,
-    color: themeStyle.BLACK
-  },
-  modalDetail: {
-    fontSize: 14,
-    fontFamily: FONT.ManropeRegular,
-    marginBottom: 5,
-    color: themeStyle.TEXT_GREY
-
-  },
-  modalContent: {
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    elevation: 5,
-    shadowColor: '#000000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333333',
+    color: themeStyle.BLACK,
+    marginBottom: 15,
   },
   detailContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    marginBottom: 10,
   },
   detailLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#555555',
+    fontSize: 14,
+    fontFamily: FONT.ManropeSemiBold,
+    color: themeStyle.TEXT_GREY,
   },
   detailValue: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: '#333333',
+    fontSize: 14,
+    fontFamily: FONT.ManropeRegular,
+    color: themeStyle.BLACK,
   },
   itemsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    fontFamily: FONT.ManropeBold,
+    color: themeStyle.BLACK,
     marginVertical: 10,
-    color: '#333333',
   },
   itemContainer: {
     paddingVertical: 5,
-    bottom: 10
   },
   itemText: {
-    fontSize: 16,
-    color: '#333333',
+    fontSize: 14,
+    fontFamily: FONT.ManropeRegular,
+    color: themeStyle.TEXT_GREY,
   },
 });

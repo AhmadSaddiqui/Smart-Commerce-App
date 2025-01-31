@@ -484,14 +484,14 @@ export default function UserProducts({navigation}) {
     const imaggaApiKey = 'acc_b25dea069e26672';
     const imaggaApiSecret = '3b2d7321b815afd2d48da1543e1e583b';
     const apiUrl = 'https://api.imagga.com/v2/tags';
-
+  
     const authHeader =
       'Basic ' +
       Buffer.from(`${imaggaApiKey}:${imaggaApiSecret}`).toString('base64');
-
+  
     const formData = new FormData();
     formData.append('image_base64', base64Image);
-
+  
     try {
       const response = await axios.post(apiUrl, formData, {
         headers: {
@@ -499,9 +499,16 @@ export default function UserProducts({navigation}) {
           'Content-Type': 'multipart/form-data',
         },
       });
-
-      const tags = response.data.result.tags.map(tag => tag.tag.en);
-
+  
+      let tags = response.data.result.tags.map(tag => tag.tag.en);
+  
+      // Ensure the tags are between 40 and 50
+      if (tags.length < 40) {
+        tags = [...tags, ...Array(40 - tags.length).fill('default')]; // Fill with placeholder 'default' tags if fewer than 40
+      } else if (tags.length > 50) {
+        tags = tags.slice(0, 50); // Limit to a maximum of 50
+      }
+  
       console.log('Yehb tags ha ', tags);
       return tags;
     } catch (error) {
@@ -509,6 +516,7 @@ export default function UserProducts({navigation}) {
       throw new Error('Failed to process image');
     }
   };
+  
 
   /**
    * Handles the generation of tags from the selected image.
@@ -585,6 +593,9 @@ export default function UserProducts({navigation}) {
           textColor: 'white',
         });
       }
+
+      setproducts([]);
+      setrecent([]);
 
       setsearchproducts(searchResults.slice(0,4));
     } catch (error) {

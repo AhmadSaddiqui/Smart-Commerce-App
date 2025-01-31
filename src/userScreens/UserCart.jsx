@@ -8,7 +8,7 @@ import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 import { ROUTES } from '../routes/RoutesConstants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Snackbar from 'react-native-snackbar';
-import { BaseurlSupplier } from '../Apis/apiConfig';
+import { BaseurlOrder, BaseurlSupplier } from '../Apis/apiConfig';
 
 export default function UserCart({ navigation }) {
   const cartItems = useSelector(state => state.cart.items);
@@ -128,62 +128,7 @@ export default function UserCart({ navigation }) {
   };
 
 
-  const placeOrder = async () => {
-    setloading(true)
-    const restuarantId = await AsyncStorage.getItem('restuarantId')
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    const items = cartItems.map(item => ({
-      productId: item._id,
-      quantity: item.quantity
-    }));
-
-    const raw = JSON.stringify({
-      restaurantId: restuarantId,
-      items: items,
-      shippingAddress: "123 Main St, Springfield, IL",
-      billingAddress: "456 Elm St, Springfield, IL"
-    });
-
-    const requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow"
-    };
-
-
-
-    try {
-      const response = await fetch("https://meat-app-backend-zysoftec.vercel.app/api/order", requestOptions);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      console.log(result);
-      navigation.navigate(ROUTES.UserCheckout)
-      setloading(false)
-      dispatch(clearCart());
-      Snackbar.show({
-        text: 'Order Place Successfully',
-        duration: Snackbar.LENGTH_LONG,
-        backgroundColor: 'rgba(212, 4, 28, 1)',
-        textColor: 'white',
-        marginBottom: 0,
-      });
-      // Alert.alert("Order placed successfully!", JSON.stringify(result));
-    } catch (error) {
-      console.error('There was an error placing the order:', error);
-      setloading(false)
-      // Alert.alert("Error", "Failed to place the order. Please try again.");
-    }
-  };
-
-  // useEffect(() => {
-  //   setSupplierCount(countDistinctSuppliers(cartItems)); // Update supplier count when cartItems change
-  //   console.log('count:',countDistinctSuppliers(cartItems));
-  // }, [cartItems]);
+  
 
   useEffect(() => {
     console.log('cartData:', cartItems);
@@ -212,7 +157,7 @@ export default function UserCart({ navigation }) {
                   <Image resizeMode='contain' style={styles.cartItemImage} source={{ uri: item.image?.url.replace('localhost', '10.0.2.2') }} />
 
                 ) : (
-                  <Image resizeMode='contain' style={styles.cartItemImage} source={{ uri: item.image }} />
+                  <Image resizeMode='contain' style={styles.cartItemImage} source={{ uri: item.image.replace('localhost', '10.0.2.2') }} />
 
                 )
               }
@@ -220,6 +165,7 @@ export default function UserCart({ navigation }) {
             <View>
               <Text style={styles.itemTitle}>
                 {truncateTitle(item.name, 15)}
+                
               </Text>
               <Text style={styles.itemQuantity}>{item.quantity}.</Text>
             </View>
@@ -265,9 +211,7 @@ export default function UserCart({ navigation }) {
           source={require('../../assets/images/Cart/basket.png')}
           style={styles.noCartImage}
         />
-        <Text style={styles.NoCartTitle}>
-          Hungry!!
-        </Text>
+       
         <Text style={styles.NoCartText}>
           No items in You Cart
         </Text>

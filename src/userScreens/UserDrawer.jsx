@@ -16,14 +16,14 @@ export default function UserDrawer({ navigation }) {
   }
 
   const getRestuarant = async () => {
-    const restuarantId = await AsyncStorage.getItem('restuarantId');
+    const buyerId = await AsyncStorage.getItem('buyerId');
 
     try {
       const requestOptions = {
         method: "GET",
         redirect: "follow"
       };
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/restaurant/${restuarantId}`, requestOptions)
+      const response = await fetch(`${BaseurlBuyer}${buyerId}`, requestOptions)
       const result = await response.json()
       setrestaurant(result)
     } catch (error) {
@@ -40,7 +40,7 @@ export default function UserDrawer({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Image style={styles.profileImage} source={require('../../assets/images/Splash/dp.png')} />
+          {/* <Image style={styles.profileImage} source={require('../../assets/images/Splash/dp.png')} /> */}
           <View style={styles.profileTextContainer}>
             <Text style={styles.profileName} numberOfLines={1}>{restaurant?.name}</Text>
             <Text style={styles.profileEmail} numberOfLines={1}>{restaurant?.email}</Text>
@@ -79,26 +79,10 @@ export default function UserDrawer({ navigation }) {
         </TouchableOpacity>
 
 
-        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={[styles.menuItem, { marginTop: '8%' }]}>
-          <Image resizeMode='contain' style={styles.menuIcon} source={require('../../assets/icons/Drawer/notification.png')} />
-          <Text style={styles.menuText}>Notifications</Text>
-          <Image resizeMode='contain' style={styles.menuIconforward} source={require('../../assets/icons/Drawer/forward.png')} />
-        </TouchableOpacity>
-
-
-        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={[styles.menuItem, { marginTop: '8%' }]}>
-          <Image resizeMode='contain' style={styles.menuIcon} source={require('../../assets/icons/Drawer/payment.png')} />
-          <Text style={styles.menuText}>Payment Method</Text>
-          <Image resizeMode='contain' style={styles.menuIconforward} source={require('../../assets/icons/Drawer/forward.png')} />
-        </TouchableOpacity>
+       
 
 
 
-        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={[styles.menuItem, { marginTop: '15%' }]}>
-          <Image resizeMode='contain' style={styles.menuIcon} source={require('../../assets/icons/Drawer/faq.png')} />
-          <Text style={styles.menuText}>FAQs</Text>
-          <Image resizeMode='contain' style={styles.menuIconforward} source={require('../../assets/icons/Drawer/forward.png')} />
-        </TouchableOpacity>
 
 
         <TouchableOpacity onPress={() => navigation.navigate('Orders')} style={[styles.menuItem, { marginTop: '8%' }]}>
@@ -108,11 +92,7 @@ export default function UserDrawer({ navigation }) {
         </TouchableOpacity>
 
 
-        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={[styles.menuItem, { marginTop: '8%' }]}>
-          <Image resizeMode='contain' style={styles.menuIcon} source={require('../../assets/icons/Drawer/settings.png')} />
-          <Text style={styles.menuText}>Settings</Text>
-          <Image resizeMode='contain' style={styles.menuIconforward} source={require('../../assets/icons/Drawer/forward.png')} />
-        </TouchableOpacity>
+      
 
 
 
@@ -136,7 +116,7 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 121,
-    backgroundColor: themeStyle.BLACK,
+    backgroundColor: '#6C53FD',
     justifyContent: 'center',
   },
   headerContent: {
