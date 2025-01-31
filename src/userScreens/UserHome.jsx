@@ -481,8 +481,8 @@ export default function UserProducts({navigation}) {
    * @returns {Promise<string[]>} - A promise that resolves to an array of tags.
    */
   const generateTagsFromImagga = async base64Image => {
-    const imaggaApiKey = 'acc_2d1b8c44c6a251d';
-    const imaggaApiSecret = 'a4bece68eb91e737f351872f7b5a7087';
+    const imaggaApiKey = 'acc_b25dea069e26672';
+    const imaggaApiSecret = '3b2d7321b815afd2d48da1543e1e583b';
     const apiUrl = 'https://api.imagga.com/v2/tags';
 
     const authHeader =
@@ -586,7 +586,7 @@ export default function UserProducts({navigation}) {
         });
       }
 
-      setsearchproducts(searchResults);
+      setsearchproducts(searchResults.slice(0,4));
     } catch (error) {
       console.error('Error searching products by tags:', error);
       setImageError(error.message);
@@ -768,7 +768,7 @@ export default function UserProducts({navigation}) {
                 size={70}
                 style={{marginTop: 150}}
               />
-            ) : recent?.length === 0 ? (
+            ) : searchproducts?.length === 0 ? (
               <View
                 style={{
                   flex: 1,
@@ -783,7 +783,7 @@ export default function UserProducts({navigation}) {
               <FlatList
                 data={searchproducts.slice(0, 4)}
                 renderItem={renderProductItem}
-                keyExtractor={(item, index) => item._id + index}
+                keyExtractor={(item, index) => item.id + index}
                 contentContainerStyle={styles.chunkListContainer}
                 numColumns={column}
               />
@@ -794,13 +794,6 @@ export default function UserProducts({navigation}) {
             {/* Latest Products Header */}
             <View style={styles.chunkHeader}>
               <Text style={styles.categoriesTitle}>Latest Products</Text>
-              {/* Uncomment if you want a "View All" button */}
-              {/* 
-          <TouchableOpacity onPress={() => navigation.navigate(ROUTES.AllProducts)} style={styles.viewAll}>
-            <Text style={styles.viewAllText}>View All</Text>
-            <Image resizeMode='contain' style={styles.arrowIcon} source={require('../../assets/images/Home/arrow2.png')} />
-          </TouchableOpacity> 
-          */}
             </View>
 
             {/* Latest Products FlatList */}

@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { addItemToCart } from '../redux/CartSlice';
 import Empty from '../components/Empty';
+import { BaseurlOrder } from '../Apis/apiConfig';
 
 export default function UserFavourites() {
   const navigation = useNavigation();
@@ -33,7 +34,7 @@ export default function UserFavourites() {
     };
 
     try {
-      const response = await fetch(`https://meat-app-backend-zysoftec.vercel.app/api/order/history/${buyerId}`, requestOptions);
+      const response = await fetch(`${BaseurlOrder}/history/${buyerId}`, requestOptions);
 
       const result = await response.json();
       console.log(result, 'myorders')
@@ -63,13 +64,13 @@ export default function UserFavourites() {
   };
 
   const renderItem = ({ item }) => {
-    console.log('Print item', item?.items);
+
 
     return (
       <View style={styles.cartItemContainer}>
         <View style={styles.cartItemRow}>
           <View style={styles.imageContainer}>
-            <Image resizeMode='contain' style={styles.cartItemImage} source={{ uri: 'https://media.istockphoto.com/id/935316446/photo/fresh-raw-rib-eye-steaks-isolated-on-white.jpg?s=612x612&w=0&k=20&c=UBnLccI6y47Vynuxa2BybZS0jPUtEqpJvL4LzVgGSOg=' }} />
+           
           </View>
           <View>
             {item?.items?.map((product, index) => (
