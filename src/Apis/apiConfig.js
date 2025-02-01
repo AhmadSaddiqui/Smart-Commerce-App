@@ -12,3 +12,13 @@ export const API_BASE_URL = "http://10.0.2.2:5000/api"
  export const BaseurlCategory ="http://10.0.2.2:5000/api/category/"
 
  //export const BaseurlCategory ="https://smart-commerce-backend.vercel.app/api/category/"
+
+
+ // Mobile app Api key
+//  export const BaseurlBuyer = "http://10.0.2.2:5000/api/buyer/"
+
+//  export const BaseurlSupplier = "http://10.0.2.2:5000/api/supplier/"
+//  export const BaseurlProducts = "http://10.0.2.2:5000/api/products/"
+//  export const BaseurlOrder = "http://10.0.2.2:5000/api/order/"
+//  export const API_BASE_URL = "http://10.0.2.2:5000/api"
+//  export const BaseurlCategory ="http://10.0.2.2:5000/api/category/"

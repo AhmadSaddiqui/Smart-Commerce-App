@@ -481,8 +481,8 @@ export default function UserProducts({navigation}) {
    * @returns {Promise<string[]>} - A promise that resolves to an array of tags.
    */
   const generateTagsFromImagga = async base64Image => {
-    const imaggaApiKey = 'acc_b25dea069e26672';
-    const imaggaApiSecret = '3b2d7321b815afd2d48da1543e1e583b';
+    const imaggaApiKey = 'acc_8fb7d49a9698cb1';
+    const imaggaApiSecret = 'd4403d68c7988a5ee15584dd8ddd7d96';
     const apiUrl = 'https://api.imagga.com/v2/tags';
   
     const authHeader =
@@ -524,7 +524,8 @@ export default function UserProducts({navigation}) {
    */
   const handleGenerateTags = async imageUri => {
     if (!imageUri) return;
-
+    setproducts([]);
+    setrecent([]);
     try {
       setImageLoading(true);
       setImageError(null);
@@ -559,6 +560,9 @@ export default function UserProducts({navigation}) {
    */
   const handleSearchByTags = async tags => {
     try {
+      setproducts([]);
+      setsearchproducts()
+      setrecent([]);
       const buyerToken = await AsyncStorage.getItem('buyerToken');
       const requestOptions = {
         method: 'POST',
@@ -594,8 +598,7 @@ export default function UserProducts({navigation}) {
         });
       }
 
-      setproducts([]);
-      setrecent([]);
+
 
       setsearchproducts(searchResults.slice(0,4));
     } catch (error) {

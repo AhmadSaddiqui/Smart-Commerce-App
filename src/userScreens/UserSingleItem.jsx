@@ -233,10 +233,10 @@ export default function UserSingleItem({ navigation }) {
         <Text style={styles.descriptionText}>{item?.description}</Text>
 
         {
-          item?.features.length > 0 && (
+          item?.features && item?.features.length > 0 && (
             <>
               <Text style={styles.keyFeaturesTitle}>Key Features:</Text>
-              {item.features.map((feature) => (
+              {item?.feature && item.features.map((feature) => (
                 <Text key={feature._id} style={styles.keyFeature}>
                   <Text style={styles.boldText}>{feature.title}:</Text> {feature.description}
                 </Text>

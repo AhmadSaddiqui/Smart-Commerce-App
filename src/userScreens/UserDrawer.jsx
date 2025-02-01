@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   menuIcon: {
     height: 19,
     width: 19,
-    marginLeft: '10%',
+    marginLeft: '10%',   
   },
   menuText: {
     fontSize: 16,
